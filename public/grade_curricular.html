@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conta do(a) Aluno(a)</title>
+    <link rel="icon" href="s.jpeg" sizes="64x64">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(to bottom, #ffffff, #d3a4e0);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .menu-lateral {
+            height: 100%;
+            width: 250px;
+            position: fixed;
+            top: 0;
+            left: -250px; 
+            background-color: #111;
+            color: white;
+            transition: 0.3s;
+            padding-top: 20px;
+            overflow: hidden;
+            border-top-left-radius: 10px; 
+            border-bottom-left-radius: 10px; 
+            border-top-right-radius: 120px; 
+            border-bottom-right-radius: 120px; 
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); 
+        }
+
+        .menu-lateral .foto-icone {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .menu-lateral .foto-icone img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+        }
+
+        .menu-lateral .logo-seif {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .menu-lateral a {
+            padding: 15px 25px;
+            text-decoration: none;
+            font-size: 18px;
+            color: white;
+            display: block;
+            transition: 0.3s;
+            border-bottom: 1px solid #444;
+        }
+
+        .menu-lateral a:hover {
+            background-color: #575757;
+        }
+
+        .toggle-btn {
+            font-size: 25px;
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background-color: transparent;
+            border: none;
+            color: black;
+            cursor: pointer;
+            z-index: 1000;
+        }
+
+        .toggle-btn div {
+            width: 25px;
+            height: 4px;
+            background-color: black;
+            margin: 5px 0;
+            transition: 0.4s;
+        }
+
+        .conteudo {
+            margin-left: 20px;
+            padding: 20px;
+            flex-grow: 1;
+        }
+
+        .cabecalho {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 10px;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .cabecalho .nome-usuario {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin-left: 10px;
+        }
+
+        .cabecalho .imagem-usuario img {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .imagem-rodape {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 250px;
+            height: 250px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .imagem-rodape img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .rodape {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #111;
+            color: white;
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            justify-content: space-between;
+            font-size: 18px;
+            font-weight: bold;
+            flex-direction: column;
+        }
+
+        .rodape .nome-seif {
+            margin-bottom: 10px; 
+        }
+
+        .rodape .toggle-btn {
+            font-size: 25px;
+            position: relative;
+            background-color: transparent;
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
+
+        .extra-content {
+            text-align: center;
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="menuLateral" class="menu-lateral">
+        <div class="foto-icone">
+            <img src="https://via.placeholder.com/80" alt="Ícone do Site">
+        </div>
+        <div class="logo-seif">
+            SEIF
+        </div>
+        <a onclick="inicio()">Inicio</a>
+        <a onclick="boletim()">Boletim</a>
+    </div>
+
+    <button class="toggle-btn" onclick="toggleMenu()">
+        <div></div>
+        <div></div>
+        <div></div>
+    </button>
+
+    <div class="cabecalho">
+        <div id="nomeAluno" class="nome-usuario"></div>
+        <div class="imagem-usuario">
+            <img src="https://th.bing.com/th/id/OIP.1KIF8Tv6rMV2AdOR1Bv6eAHaHa?rs=1&pid=ImgDetMain" alt="Imagem da Conta">
+        </div>
+    </div>
+
+    <div class="conteudo">
+        <h1>Grade Curricular</h1>
+        <div id="boletim_grade"></div>
+    </div>
+
+    <div class="imagem-rodape">
+        <img src="https://th.bing.com/th/id/OIP.CZIlTP8Yo_M7ylfNLOtDYAHaHa?w=1200&h=1200&rs=1&pid=ImgDetMain" alt="Imagem no Rodapé">
+    </div>
+
+    <div class="rodape">
+        <div class="nome-seif">SEIF</div>
+        <div class="imagem-rodape">
+            <img src="https://th.bing.com/th/id/OIP.CZIlTP8Yo_M7ylfNLOtDYAHaHa?w=1200&h=1200&rs=1&pid=ImgDetMain" alt="Imagem no Rodapé">
+        </div>
+    </div>
+
+    <script src="grade_curricular.js"></script>
+</body>
+</html>

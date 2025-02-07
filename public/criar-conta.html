@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar conta</title>
+    <link rel="icon" href="s.jpeg" sizes="64x64">
+    <style>
+        .conteudo {
+            margin-left: 20px;
+            padding: 20px;
+            flex-grow: 1;
+        }
+        .imagem-rodape {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 250px;
+            height: 250px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        .imagem-rodape img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .rodape {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #111;
+            color: white;
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            justify-content: space-between;
+            font-size: 18px;
+            font-weight: bold;
+            flex-direction: column;
+        }
+        form {
+            margin: 20px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            width: 50%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        input[type="text"], input[type="email"], input[type="date"], input[type="password"], select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .error {
+            color: red;
+            font-size: 14px;
+            margin-top: -10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="conteudo">
+        <h1>Bem-vindo(a) à Página do cadastro do(a) estudante</h1>
+        <p>Esta página serve para cadastrar o(a) estudante no Sistema Escolar do Instituto Federal (SEIF)</p>
+        
+        <form id="formCadastro">
+            <label for="nome">Nome Completo:</label>
+            <input type="text" id="nome" name="nome" required>
+
+            <label for="dataNascimento">Data de Nascimento:</label>
+            <input type="date" id="dataNascimento" name="dataNascimento" required>
+
+            <label for="endereco">Endereço:</label>
+            <input type="text" id="endereco" name="endereco" required>
+
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+
+            <label for="turma">Turma:</label>
+            <select id="turma" name="turma" required>
+                <option value="">Selecione a turma</option>
+            </select>
+
+            <label for="usuario">Nome de Usuário:</label>
+            <input type="text" id="usuario" name="usuario" required>
+
+            <label for="senha">Senha (8 dígitos):</label>
+            <input type="password" id="senha" name="senha" required>
+
+            <label for="confirmacaoSenha">Confirmar Senha:</label>
+            <input type="password" id="confirmacaoSenha" name="confirmacaoSenha" required>
+
+            <button type="submit">Cadastrar</button>
+            <p class="error" id="erroSenha"></p>
+        </form>
+    </div>
+
+    <div class="imagem-rodape">
+        <img src="https://th.bing.com/th/id/OIP.CZIlTP8Yo_M7ylfNLOtDYAHaHa?w=1200&h=1200&rs=1&pid=ImgDetMain" alt="Imagem no Rodapé">
+    </div>
+
+    <div class="rodape">
+        <div class="nome-seif">SEIF</div>
+        <div class="imagem-rodape">
+            <img src="https://th.bing.com/th/id/OIP.CZIlTP8Yo_M7ylfNLOtDYAHaHa?w=1200&h=1200&rs=1&pid=ImgDetMain" alt="Imagem no Rodapé">
+        </div>
+    </div>
+    <script type="module" src="script.js" defer></script>
+
+</body>
+</html>
