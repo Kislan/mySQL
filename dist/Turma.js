@@ -1,3 +1,5 @@
+import { Aluno } from "./Aluno.js";
+import { Disciplina } from "./Disciplina.js";
 export class Turma {
     constructor(nome, anoLetivo, turno) {
         this._disciplinas = [];
@@ -7,25 +9,28 @@ export class Turma {
         this._turno = turno;
     }
     adicionarDisciplina(disciplina) {
-        if (!disciplina || typeof disciplina.nome !== "string" || typeof disciplina.quantidadeAulas !== "number") {
-            throw new Error("Disciplina fornecida é inválida.");
-        }
+        // Verifica se a disciplina já existe na turma
         if (this._disciplinas.some(d => d.nome === disciplina.nome)) {
             throw new Error(`Disciplina ${disciplina.nome} já foi adicionada à turma.`);
+        }
+        if (!disciplina || !(disciplina instanceof Disciplina)) {
+            throw new Error("Disciplina fornecida é inválida.");
         }
         this._disciplinas.push(disciplina);
     }
     adicionarAluno(aluno) {
-        if (!aluno || typeof aluno.nome !== "string" || typeof aluno.email !== "string") {
-            throw new Error("Aluno fornecido é inválido.");
-        }
+        // Verifica se o aluno já existe na turma
         if (this._alunos.some(a => a.nome === aluno.nome && a.email === aluno.email)) {
             throw new Error(`Aluno ${aluno.nome} já foi adicionado à turma.`);
         }
+        if (!aluno || !(aluno instanceof Aluno)) {
+            throw new Error("Aluno fornecido é inválido.");
+        }
         this._alunos.push(aluno);
     }
+    // Matricular aluno na disciplina.
     matricularAlunoNaDisciplina(aluno, disciplina) {
-        if (this._alunos.some(a => a.nome === aluno.nome && a.email === aluno.email)) {
+        if (this._alunos.includes(aluno)) {
             console.log(`${aluno.nome} matriculado na disciplina ${disciplina.nome}`);
         }
         else {
