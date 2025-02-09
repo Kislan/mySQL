@@ -1,5 +1,7 @@
 import express from 'express';
 import cors from 'cors';
+import dotenv from 'dotenv';
+dotenv.config(); // Isso vai carregar as variáveis de ambiente do arquivo .env
 import turmaRoutes from './routes/turmaRoutes';
 import alunoRoutes from './routes/alunoRoutes';
 import disciplinaRoutes from './routes/disciplinaRoutes';
@@ -24,6 +26,7 @@ app.use('/api/frequencia', frequenciaRoutes)
 app.use('/api/turma_disciplina', turma_disciplinaRoutes)
 app.use('/api/aluno_disciplina', aluno_disciplinaRoutes)
 
+console.log('Rotas carregadas corretamente!');
 
 app.listen(3000, () => {
   console.log(`Servidor rodando em http://localhost:3000`);

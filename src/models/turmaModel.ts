@@ -13,10 +13,12 @@ const pool = mysql.createPool({
   port: Number(process.env.DB_PORT),
 });
 
+console.log('Pool de conexão criada:', pool);  // Adicione esse log
+
 export async function getTurmas() {
   try {
-    const [rows] = await pool.execute('SELECT * FROM turma'); // Ajuste para o nome correto da tabela
-    return rows;  // Retorna as turmas encontradas
+    const [rows] = await pool.execute('SELECT * FROM turma');
+    return rows;
   } catch (error) {
     console.error('Erro ao buscar turmas:', error);
     throw new Error('Erro ao buscar turmas');
