@@ -1,5 +1,7 @@
+
 document.addEventListener('DOMContentLoaded', async () => {
     const turmaSelect = document.getElementById("turma");
+<<<<<<< HEAD
   
     try {
       // Requisição para obter as turmas
@@ -17,14 +19,36 @@ document.addEventListener('DOMContentLoaded', async () => {
         option.textContent = turma.nome;
         turmaSelect.appendChild(option);
       });
+=======
+
+    try {
+        const response = await fetch('http://localhost:3000/api/turma');
+        const turmas = await response.json();
+        console.log('Turmas recebidas do servidor:', turmas);  // Verifique o que chegou do servidor
+        
+        turmas.forEach(turma => {
+            const option = document.createElement("option");
+            option.value = turma.id;
+            option.textContent = turma.nome;
+            turmaSelect.appendChild(option);
+        });
+>>>>>>> 4bd0217 (turmas listadas)
     } catch (error) {
       console.error("Erro ao carregar turmas:", error.message);
       alert("Erro ao carregar turmas. Tente novamente mais tarde.");
     }
+<<<<<<< HEAD
   });
   
   // Função para criar aluno e cadastrá-lo
   async function criarAlunoECadastrar(nome, dataNascimento, endereco, email, turmaID, usuario, senha) {
+=======
+});
+
+
+// Função para criar aluno e cadastrá-lo
+async function criarAlunoECadastrar(nome, dataNascimento, endereco, email, turmaID, usuario, senha) {
+>>>>>>> 4bd0217 (turmas listadas)
     try {
       const response = await fetch('http://localhost:3000/api/aluno', {
         method: 'POST',
