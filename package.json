@@ -14,8 +14,8 @@
   },
   "name": "mysql",
   "version": "1.0.0",
-  "description": "��#\u0000 \u0000S\u0000i\u0000s\u0000t\u0000e\u0000m\u0000a\u0000-\u0000d\u0000e\u0000-\u0000G\u0000e\u0000s\u0000t\u0000-\u0000o\u0000-\u0000E\u0000s\u0000c\u0000o\u0000l\u0000a\u0000r\u0000\r\u0000 \u0000",
-  "main": "jest.config.js",
+  "description": "Aplicação com TypeScript e Express.",
+  "main": "src/app.ts",  
   "directories": {
     "test": "test"
   },
@@ -60,19 +60,7 @@
     "dedent": "^1.5.3",
     "deepmerge": "^4.3.1",
     "detect-newline": "^3.1.0",
-    "diff-sequences": "^29.6.3",
     "dotenv": "^16.4.7",
-    "ejs": "^3.1.10",
-    "electron-to-chromium": "^1.5.92",
-    "emittery": "^0.13.1",
-    "emoji-regex": "^8.0.0",
-    "error-ex": "^1.3.2",
-    "escalade": "^3.2.0",
-    "escape-string-regexp": "^2.0.0",
-    "esprima": "^4.0.1",
-    "execa": "^5.1.1",
-    "exit": "^0.1.2",
-    "expect": "^29.7.0",
     "express": "^4.21.2",
     "express-handlebars": "^8.0.1",
     "fast-json-stable-stringify": "^2.1.0",
@@ -109,7 +97,6 @@
     "istanbul-lib-report": "^3.0.1",
     "istanbul-lib-source-maps": "^4.0.1",
     "istanbul-reports": "^3.1.7",
-    "jake": "^10.9.2",
     "jest-changed-files": "^29.7.0",
     "jest-circus": "^29.7.0",
     "jest-cli": "^29.7.0",
@@ -214,18 +201,17 @@
     "which": "^2.0.2",
     "wrap-ansi": "^7.0.0",
     "wrappy": "^1.0.2",
-    "write-file-atomic": "^4.0.2",
-    "y18n": "^5.0.8",
-    "yallist": "^3.1.1",
-    "yargs": "^17.7.2",
-    "yargs-parser": "^21.1.1",
-    "yocto-queue": "^0.1.0"
+    "write-file-atomic": "^4.0.3"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "ts-node src/app.ts"
+    "dev": "ts-node-dev --respawn --transpile-only src/app.ts",
+    "start": "ts-node src/app.ts", 
+    "test": "jest" 
   },
-  "keywords": [],
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node"
+  },
   "author": "",
   "license": "ISC"
 }

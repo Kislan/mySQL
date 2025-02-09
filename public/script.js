@@ -1,14 +1,15 @@
+
 document.addEventListener('DOMContentLoaded', async () => {
     const turmaSelect = document.getElementById("turma");
-    
+
     try {
-        // Carregar turmas na opção select
-        const response = await fetch('/api/turma');
+        const response = await fetch('http://localhost:3000/api/turma');
         const turmas = await response.json();
+        console.log('Turmas recebidas do servidor:', turmas);  // Verifique o que chegou do servidor
         
         turmas.forEach(turma => {
             const option = document.createElement("option");
-            option.value = turma.id;  // Usando o ID da turma
+            option.value = turma.id;
             option.textContent = turma.nome;
             turmaSelect.appendChild(option);
         });
@@ -17,6 +18,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         alert("Erro ao carregar turmas. Tente novamente mais tarde.");
     }
 });
+
 
 // Função para criar aluno e cadastrá-lo
 async function criarAlunoECadastrar(nome, dataNascimento, endereco, email, turmaID, usuario, senha) {
