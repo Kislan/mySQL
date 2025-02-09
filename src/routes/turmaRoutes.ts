@@ -1,4 +1,3 @@
-// No arquivo de rotas (ex: turmaRouter.js)
 import express from 'express';
 import * as turmaController from '../controllers/turmaController';
 

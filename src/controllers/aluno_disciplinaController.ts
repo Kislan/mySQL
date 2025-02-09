@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import * as aluno_disciplinaModel from '../models/aluno_disciplinaModel';
 
 // Função para obter os alunos
-export async function getAlunos(req: Request, res: Response) {
+export async function getAlunos_disiplinas(req: Request, res: Response) {
   try {
     const alunos_disciplinas = await aluno_disciplinaModel.getAluno_disciplina();
     res.json(alunos_disciplinas);
