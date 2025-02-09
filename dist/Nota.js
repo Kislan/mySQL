@@ -1,4 +1,7 @@
-export class Nota {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Nota = void 0;
+class Nota {
     constructor(valorNota, disciplina, aluno, tipoAvaliacao, bimestre) {
         this._valorNota = valorNota;
         this._disciplina = disciplina;
@@ -44,3 +47,4 @@ export class Nota {
         return this._bimestre;
     }
 }
+exports.Nota = Nota;

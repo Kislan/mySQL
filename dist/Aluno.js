@@ -1,4 +1,7 @@
-export class Aluno {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Aluno = void 0;
+class Aluno {
     constructor(nome, dataNascimento, endereco, email, turma, usuario, senha) {
         this._notas = [];
         this._aulasEFaltas = new Map();
@@ -24,11 +27,14 @@ export class Aluno {
     }
     // Método toJSON para personalizar a serialização do aluno
     toJSON() {
-        return Object.assign(Object.assign({}, this), { _aulasEFaltas: Array.from(this._aulasEFaltas.entries()).reduce((obj, [key, value]) => {
+        return {
+            ...this, // Copia todas as propriedades do aluno
+            _aulasEFaltas: Array.from(this._aulasEFaltas.entries()).reduce((obj, [key, value]) => {
                 obj[key] = value;
                 return obj;
-            }, {}), _turma: this._turma.toJSON() // Converte a turma de maneira similar, se necessário
-         });
+            }, {}), // Converte o Map para um objeto simples
+            _turma: this._turma.toJSON() // Converte a turma de maneira similar, se necessário
+        };
     }
     // Método para adicionar notas ao aluno
     adicionarNota(nota) {
@@ -119,3 +125,4 @@ export class Aluno {
         return this._notas;
     }
 }
+exports.Aluno = Aluno;

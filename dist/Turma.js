@@ -1,6 +1,7 @@
-import { Aluno } from "./Aluno.js";
-import { Disciplina } from "./Disciplina.js";
-export class Turma {
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Turma = void 0;
+class Turma {
     constructor(nome, anoLetivo, turno) {
         this._disciplinas = [];
         this._alunos = [];
@@ -9,28 +10,25 @@ export class Turma {
         this._turno = turno;
     }
     adicionarDisciplina(disciplina) {
-        // Verifica se a disciplina já existe na turma
+        if (!disciplina || typeof disciplina.nome !== "string" || typeof disciplina.quantidadeAulas !== "number") {
+            throw new Error("Disciplina fornecida é inválida.");
+        }
         if (this._disciplinas.some(d => d.nome === disciplina.nome)) {
             throw new Error(`Disciplina ${disciplina.nome} já foi adicionada à turma.`);
-        }
-        if (!disciplina || !(disciplina instanceof Disciplina)) {
-            throw new Error("Disciplina fornecida é inválida.");
         }
         this._disciplinas.push(disciplina);
     }
     adicionarAluno(aluno) {
-        // Verifica se o aluno já existe na turma
+        if (!aluno || typeof aluno.nome !== "string" || typeof aluno.email !== "string") {
+            throw new Error("Aluno fornecido é inválido.");
+        }
         if (this._alunos.some(a => a.nome === aluno.nome && a.email === aluno.email)) {
             throw new Error(`Aluno ${aluno.nome} já foi adicionado à turma.`);
         }
-        if (!aluno || !(aluno instanceof Aluno)) {
-            throw new Error("Aluno fornecido é inválido.");
-        }
         this._alunos.push(aluno);
     }
-    // Matricular aluno na disciplina.
     matricularAlunoNaDisciplina(aluno, disciplina) {
-        if (this._alunos.includes(aluno)) {
+        if (this._alunos.some(a => a.nome === aluno.nome && a.email === aluno.email)) {
             console.log(`${aluno.nome} matriculado na disciplina ${disciplina.nome}`);
         }
         else {
@@ -65,3 +63,4 @@ export class Turma {
         return this._alunos;
     }
 }
+exports.Turma = Turma;

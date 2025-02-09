@@ -1,16 +1,23 @@
 {
   "compilerOptions": {
     "target": "ES2020",              // Usando ES2020 para aproveitar mais recursos do JavaScript moderno
-    "module": "CommonJS",              // Módulos ES6 para compatibilidade com bundlers
-    "rootDir": "./src",              // Diretório fonte
-    "outDir": "./dist",              // Diretório de saída
+    "module": "CommonJS",            // Compatível com bundlers e Node.js
+    "rootDir": "./src",              // Diretório fonte onde seus arquivos .ts estão
+    "outDir": "./dist",              // Diretório de saída para os arquivos compilados
     "strict": true,                  // Habilita verificações estritas de tipo
     "esModuleInterop": true,         // Habilita compatibilidade com módulos ES6
     "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true,            // Ignora verificação de tipos em arquivos de bibliotecas (node_modules)
-    "declaration": true              // Gera arquivos .d.ts de definição de tipos
+    "skipLibCheck": true,            // Ignora verificação de tipos em arquivos de bibliotecas
+    "declaration": true,             // Gera arquivos .d.ts de definição de tipos
+    "allowJs": true,                 // Permite a compilação de arquivos JavaScript
+    "checkJs": false                 // Desativa a verificação de tipos em arquivos .js
   },
-  "include": ["src"],                // Diretório de origem
-  "exclude": ["node_modules"]        // Exclui node_modules da compilação
+  "include": [
+    "src/**/*.ts",                   // Inclui arquivos TypeScript
+    "src/**/*.js",                   // Inclui arquivos JavaScript
+    "src/**/*.d.ts"                  // Inclui arquivos de definição de tipos
+  ],
+  "exclude": [
+    "node_modules"                   // Exclui node_modules da compilação
+  ]
 }
-
