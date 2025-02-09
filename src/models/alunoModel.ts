@@ -34,6 +34,11 @@ export async function criarAluno(
   senha: string,
   turma_id: number
 ) {
+  // Verifique se algum valor é inválido antes de tentar inserir no banco
+  if (!nome || !data_nascimento || !endereco || !email || !usuario || !senha || !turma_id) {
+    throw new Error('Campos obrigatórios não preenchidos');
+  }
+
   try {
     const [result] = await pool.execute(
       'INSERT INTO aluno (nome, data_nascimento, endereco, email, usuario, senha, turma_id) VALUES (?, ?, ?, ?, ?, ?, ?)',

@@ -12,18 +12,18 @@ export async function getAlunos_disiplinas(req: Request, res: Response) {
 }
 
 // Função para criar o aluno
-export async function criarAluno_disciplina(req: Request, res: Response):Promise <void> {
+export async function criarAluno_disciplina(req: Request, res: Response):Promise <any> {
   const { aluno_id,disciplina_id} = req.body;
 
   // Verifica se todos os campos obrigatórios estão presentes
   if (!aluno_id || !disciplina_id) {
-     res.status(400).json({ message: 'Todos os campos devem ser preenchidos.' });
+    return res.status(400).json({ message: 'Todos os campos devem ser preenchidos.' });
   }
 
   try {
     const result = await aluno_disciplinaModel.criarAluno_disciplina(aluno_id,disciplina_id);
-     res.status(201).json({ id: result.insertId });
+    return res.status(201).json({ id: result.insertId });
   } catch (error) {
-    res.status(500).json({ message: 'Erro ao criar aluno e disciplina' });
+    return res.status(500).json({ message: 'Erro ao criar aluno e disciplina' });
   }
 }

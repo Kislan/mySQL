@@ -18,14 +18,13 @@ document.addEventListener('DOMContentLoaded', async () => {
       alert("Erro ao carregar turmas. Tente novamente mais tarde.");
     }
   });
-  
-  // Função para criar aluno e cadastrá-lo
-  async function criarAlunoECadastrar(nome, dataNascimento, endereco, email, turmaID, usuario, senha) {
+
+  async function criarAlunoECadastrar(nome, data_nascimento, endereco, email, usuario, senha,turma_id) {
     try {
       const response = await fetch('http://localhost:3000/api/aluno', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nome, dataNascimento, endereco, email, usuario, senha, turmaID })
+        body: JSON.stringify({ nome, data_nascimento, endereco, email, usuario, senha, turma_id })
       });
   
       if (!response.ok) {
@@ -42,6 +41,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       alert(`Erro ao realizar cadastro: ${error.message}`);
     }
   }
+  
   
   // Evento de submit do formulário
   document.getElementById("formCadastro").addEventListener("submit", function(event) {
@@ -75,7 +75,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
   
       // Chama a função para criar o aluno
-      criarAlunoECadastrar(nome, dataNascimento, endereco, email, turmaID, usuario, senha);
+      criarAlunoECadastrar(nome, dataNascimento, endereco, email, usuario, senha, turmaID);
   
       // Redireciona após o cadastro
       setTimeout(() => {
