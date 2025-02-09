@@ -15,8 +15,13 @@ const pool = mysql.createPool({
 
 // Função para obter todos os alunos
 export async function getAlunos() {
-  const [rows] = await pool.execute('SELECT * FROM aluno');
-  return rows;
+  try {
+    const [rows] = await pool.execute('SELECT * FROM aluno');
+    return rows;
+  } catch (error) {
+    console.error('Erro ao obter alunos:', error);
+    throw new Error('Erro ao obter dados dos alunos');
+  }
 }
 
 // Função para criar aluno
@@ -29,11 +34,16 @@ export async function criarAluno(
   senha: string,
   turma_id: number
 ) {
-  const [result] = await pool.execute(
-    'INSERT INTO aluno (nome, data_nascimento, endereco, email, usuario, senha, turma_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
-    [nome, data_nascimento, endereco, email, usuario, senha, turma_id]
-  );
+  try {
+    const [result] = await pool.execute(
+      'INSERT INTO aluno (nome, data_nascimento, endereco, email, usuario, senha, turma_id) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [nome, data_nascimento, endereco, email, usuario, senha, turma_id]
+    );
 
-  const insertId = (result as ResultSetHeader).insertId;
-  return { insertId }; // Retorna o ID do aluno inserido
+    const insertId = (result as ResultSetHeader).insertId;
+    return { insertId }; // Retorna o ID do aluno inserido
+  } catch (error) {
+    console.error('Erro ao criar aluno:', error);
+    throw new Error('Erro ao inserir dados do aluno');
+  }
 }
