@@ -33,7 +33,7 @@ async function Login() {
 
             // Armazenamento do professor logado
             localStorage.removeItem('professorLogado');
-            localStorage.setItem('professorLogado', JSON.stringify(professor));
+            localStorage.setItem('professorLogado', JSON.stringify({nome_usuario: professor.nome_usuario}));
             alert(`Bem-vindo, Professor(a) ${professor.nome}!`);
             window.location.href = 'pagina-professor.html';
 
@@ -60,7 +60,7 @@ async function Login() {
 
             // Armazenamento do aluno logado
             localStorage.removeItem('alunoLogado');
-            localStorage.setItem('alunoLogado', JSON.stringify(aluno));
+            localStorage.setItem('alunoLogado', JSON.stringify({usuario:aluno.usuario}));
             alert(`Bem-vindo, Aluno(a) ${aluno.nome}!`);
             window.location.href = 'pagina-aluno.html';
 
