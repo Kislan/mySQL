@@ -1,23 +1,40 @@
-try {
-    // Tenta obter o aluno do localStorage e analisar os dados
-    let aluno = JSON.parse(localStorage.getItem('alunoLogado'));
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        // Tenta pegar o nome do aluno logado do localStorage
+        let aluno_nomeUsuario = JSON.parse(localStorage.getItem('alunoLogado'));
+        if (aluno_nomeUsuario) {
+            const response = await fetch('http://localhost:3000/api/aluno');
+            if (!response.ok) {
+                throw new Error('Falha ao carregar dados dos alunos.');
+            }
+            const alunos = await response.json();
 
-    // Verifica se o aluno está logado
-    if (aluno && aluno._nome) {
-        // Exibe os dados do aluno logado
-        document.getElementById('nomeAluno').textContent = aluno._nome;
-    } else {
-        // Caso o aluno não tenha nome ou não esteja logado
-        console.warn("Aluno não encontrado ou dados incompletos.");
+            // Encontrar o aluno correspondente com base no nome de usuário
+            let aluno = alunos.find(al => al.usuario === aluno_nomeUsuario.usuario);
+
+            if (aluno) {
+                // Exibe o nome do aluno
+                document.getElementById('nomeAluno').textContent = aluno.nome;
+            } else {
+                throw new Error('Aluno não encontrado na lista de alunos.');
+            }
+        } else {
+            throw new Error('Aluno não encontrado no localStorage');
+        }
+    } catch (error) {
+        console.error("Erro ao recuperar o aluno logado:", error);
+        alert("Ocorreu um erro ao carregar os dados do aluno. Por favor, tente novamente.");
     }
-} catch (error) {
-    // Caso ocorra algum erro ao acessar o localStorage ou processar os dados
-    console.error("Erro ao carregar os dados do aluno: ", error);
-    alert("Ocorreu um erro ao carregar seus dados. Por favor, tente novamente.");
-}
+});
 
 function toggleMenu() {
     const menu = document.getElementById('menuLateral');
+    if (!menu) {
+        console.error("Menu não encontrado no DOM.");
+        alert("Ocorreu um erro ao tentar abrir ou fechar o menu.");
+        return;
+    }
+
     const currentLeft = menu.style.left;
 
     try {

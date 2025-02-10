@@ -3,11 +3,17 @@ let disciplinas = [];
 
 try {
     // Tentativa de acessar os dados do aluno logado
-    aluno = JSON.parse(localStorage.getItem('alunoLogado'));
-    if (aluno) {
-        disciplinas = aluno._turma._disciplinas;
-        // Exibe os dados do aluno logado
-        document.getElementById('nomeAluno').textContent = aluno._nome;
+    let aluno_nomeUsuario = JSON.parse(localStorage.getItem('alunoLogado'));
+    if (aluno_nomeUsuario) {
+        const response = await fetch('http://localhost:3000/api/aluno');
+
+        if (!response.ok) {
+            throw new Error('Falha ao carregar dados dos alunos.');
+        }
+
+        const alunos = await response.json();
+        aluno = alunos.find(al => al.usuario === aluno_nomeUsuario.usuario);
+        document.getElementById('nomeAluno').textContent = aluno.nome;
     } else {
         throw new Error('Aluno não encontrado no localStorage');
     }
