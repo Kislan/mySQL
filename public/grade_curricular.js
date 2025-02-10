@@ -1,27 +1,62 @@
-let aluno;
-let disciplinas = [];
+let dados_aluno;
 
-try {
-    // Tentativa de acessar os dados do aluno logado
-    let aluno_nomeUsuario = JSON.parse(localStorage.getItem('alunoLogado'));
-    if (aluno_nomeUsuario) {
-        const response = await fetch('http://localhost:3000/api/aluno');
-
-        if (!response.ok) {
-            throw new Error('Falha ao carregar dados dos alunos.');
-        }
-
-        const alunos = await response.json();
-        aluno = alunos.find(al => al.usuario === aluno_nomeUsuario.usuario);
-        document.getElementById('nomeAluno').textContent = aluno.nome;
-    } else {
-        throw new Error('Aluno não encontrado no localStorage');
+async function carregarDadosDisciplinas(aluno_id){
+    const response = await fetch('http://localhost:3000/api/aluno_disciplina');
+    const aluno_disciplina = await response.json();
+        
+    if (!aluno_disciplina || aluno_disciplina.length === 0) {
+        alert("O aluno(a) não possui disciplinas associadas a ele(a).");
+        return;
     }
-} catch (error) {
-    console.error("Erro ao recuperar o aluno logado:", error);
-    // Mensagem amigável ao usuário
-    alert("Ocorreu um erro ao carregar os dados do aluno. Por favor, tente novamente.");
+
+    let disciplinas = [];
+    for (let t_d of aluno_disciplina) {
+        if (t_d.aluno_id == aluno_id) {
+            disciplinas.push(t_d.disciplina_id);
+            console.log(disciplinas);
+        }
+    }
+
+    const response_disciplina = await fetch('http://localhost:3000/api/disciplina');
+    const disciplinaS_aluno = await response_disciplina.json();
+        
+    if (!disciplinaS_aluno || disciplinaS_aluno.length === 0) {
+        alert("O aluno(a) não possui disciplinas associadas a ele(a).");
+        return;
+    }
+
+        
 }
+
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        // Tenta pegar o nome do aluno logado do localStorage
+        let aluno_nomeUsuario = JSON.parse(localStorage.getItem('alunoLogado'));
+        if (aluno_nomeUsuario) {
+            const response = await fetch('http://localhost:3000/api/aluno');
+            if (!response.ok) {
+                throw new Error('Falha ao carregar dados dos alunos.');
+            }
+            const alunos = await response.json();
+
+            // Encontrar o aluno correspondente com base no nome de usuário
+            let aluno = alunos.find(al => al.usuario === aluno_nomeUsuario.usuario);
+
+            if (aluno) {
+                // Exibe o nome do aluno
+                document.getElementById('nomeAluno').textContent = aluno.nome;
+                dados_aluno=aluno;
+            } else {
+                throw new Error('Aluno não encontrado na lista de alunos.');
+            }
+        } else {
+            throw new Error('Aluno não encontrado no localStorage');
+        }
+    } catch (error) {
+        console.error("Erro ao recuperar o aluno logado:", error);
+        alert("Ocorreu um erro ao carregar os dados do aluno. Por favor, tente novamente.");
+    }
+});
 
 function toggleMenu() {
     try {
@@ -76,6 +111,7 @@ function grade_curricular() {
                     </tr>
                 </thead>
                 <tbody>`;
+            
 
         disciplinas.forEach(disciplina => {
             boletimHtml += `
