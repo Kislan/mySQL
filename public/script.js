@@ -1,4 +1,3 @@
-
 document.addEventListener('DOMContentLoaded', async () => {
     const turmaSelect = document.getElementById("turma");
 
@@ -19,6 +18,68 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
+  async function associarAlunoAsDisciplinas(aluno_id, turmaId) {
+    try {
+        // Faz a requisição para pegar as disciplinas associadas à turma
+        const response = await fetch('http://localhost:3000/api/turma_disciplina');
+        const turma_disciplina = await response.json();
+        console.log("disciplina", turma_disciplina)
+        if (!turma_disciplina || turma_disciplina.length === 0) {
+            alert("Estas turmas não possuem disciplinas associadas.");
+            return;
+        }
+
+        // Filtra as disciplinas pela turmaId
+        let disciplinas = [];
+        for (let t_d of turma_disciplina) {
+                console.log(t_d);
+            if (t_d.turma_id == turmaId) {
+                disciplinas.push(t_d.disciplina_id);
+                console.log(disciplinas);
+            }
+        }
+
+        console.log('Disciplinas associadas à turma:', disciplinas);
+
+        if (disciplinas.length === 0) {
+            alert("Não há disciplinas associadas a esta turma.");
+            return;
+        }
+
+        // Agora associamos o aluno a cada disciplina
+        for (let disciplina_id of disciplinas) {
+            try {
+                const associarResponse = await fetch('http://localhost:3000/api/aluno_disciplina', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ aluno_id: aluno_id, disciplina_id: disciplina_id })
+                });
+
+                if (!associarResponse.ok) {
+                    const errorDetails = await associarResponse.json();
+                    console.error(`Erro ao associar aluno à disciplina ${disciplina_id}:`, errorDetails);
+                    // Aqui o código continua mesmo com o erro
+                    continue;
+                }
+
+                console.log(`Aluno ${aluno_id} associado à disciplina ${disciplina_id}`);
+            } catch (err) {
+                console.error(`Erro ao associar aluno à disciplina ${disciplina_id}:`, err.message);
+                // Aqui o código continua mesmo com o erro
+                continue;
+            }
+        }
+
+        alert("Aluno associado às disciplinas da turma com sucesso!");
+    } catch (error) {
+        console.error("Erro ao associar aluno às disciplinas:", error.message);
+        alert(`Erro ao associar aluno às disciplinas: ${error.message}`);
+    }
+}
+
+
+  
+
   async function criarAlunoECadastrar(nome, data_nascimento, endereco, email, usuario, senha,turma_id) {
     try {
       const response = await fetch('http://localhost:3000/api/aluno', {
@@ -33,8 +94,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
   
       const result = await response.json();
+      await associarAlunoAsDisciplinas(result.id, turma_id);
       alert(`Cadastro realizado com sucesso! Estudante ${nome} foi matriculado(a) na turma.`);
       console.log('Aluno cadastrado com ID:', result.id);
+
+      
   
     } catch (error) {
       console.error("Erro ao criar aluno:", error.message);
