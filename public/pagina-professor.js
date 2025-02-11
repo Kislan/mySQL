@@ -1,25 +1,42 @@
-import { Professor } from "../dist/Professor.js";
+/*import { Professor } from "../dist/Professor.js";
 import { Aluno } from "../dist/Aluno.js";
 import { Disciplina } from "../dist/Disciplina.js";
 import { Turma } from "../dist/Turma.js";
-import { Nota } from "../dist/Nota.js";
+import { Nota } from "../dist/Nota.js";*/
 import { ValidationError, DatabaseError, OperationError } from './Excecoes.js';
 
+//let professor_carregado;
+
 // Verifica se o professor está logado
-let ProfLogado;
-try {
-    ProfLogado = JSON.parse(localStorage.getItem('professorLogado'));
-    if (!ProfLogado) throw new ValidationError("Professor não encontrado no localStorage.");
-} catch (error) {
-    console.error(error.message);
-    alert("Erro ao carregar os dados do professor. Por favor, faça login novamente.");
-}
 
-// Verifica se o professor está logado e exibe seu nome
-if (ProfLogado) {
-    document.getElementById('nomeUsuario').textContent = ProfLogado._nome;
-}
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        // Tenta pegar o nome do aluno logado do localStorage
+        let proflogado = JSON.parse(localStorage.getItem('professorLogado'));
+        if (proflogado) {
+            const response_professor = await fetch('http://localhost:3000/api/professor');
+            if (!response_professor.ok) {
+                throw new Error('Falha ao carregar dados do professor.');
+            }
+            const professores = await response_professor.json();
 
+            // Encontrar o aluno correspondente com base no nome de usuário
+            let professor = professores.find(prof => prof.nome_usuario === proflogado.nome_usuario);
+
+            if (professor) {
+                document.getElementById('nomeUsuario').textContent = professor.nome;
+            } else {
+                throw new Error('Professor não encontrado.');
+            }
+        } else {
+            throw new Error('Professor não encontrado no localStorage');
+        }
+    } catch (error) {
+        console.error("Erro ao recuperar o professor logado:", error);
+        alert("Ocorreu um erro ao carregar os dados do professor. Por favor, tente novamente.");
+    }
+});
+/*
 // Instancia o professor
 let prof_instancia;
 try {
@@ -826,8 +843,6 @@ function relatorio_aluno(turma) {
         document.getElementById('relatorio').innerHTML = `
             <h3>Ocorreu um erro ao gerar o relatório. Por favor, tente novamente.</h3>
         `;
-
-        // Registrar o erro no log (caso haja necessidade de logging adicional)
-        // Uma possível implementação seria registrar o erro em um arquivo de log ou sistema de monitoramento
     }
 }
+*/
