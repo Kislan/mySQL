@@ -1,10 +1,13 @@
 /*import { Aluno } from "../dist/Aluno.js";
 import { Disciplina } from "../dist/Disciplina.js";
-import { Professor } from "../dist/Professor.js";
-import { Turma } from "../dist/Turma.js";
 import { Nota } from "../dist/Nota.js";*/
 
 let aluno_carregado;
+let turma_carregada;
+let disciplinas_carregadas=[];
+let notas_carregadas=[];
+let professores_carregados=[];
+let frequencias_carregadas=[];
 
 document.addEventListener('DOMContentLoaded', async function() {
     try {
@@ -18,70 +21,155 @@ document.addEventListener('DOMContentLoaded', async function() {
             const alunos = await response.json();
 
             // Encontrar o aluno correspondente com base no nome de usuário
-            let aluno = alunos.find(al => al.usuario === aluno_nomeUsuario.usuario);
+            let aluno = alunos.find(al => al.usuario === aluno_nomeUsuario.usuario)
 
-            if (aluno) {
-                // Exibe o nome do aluno
-                document.getElementById('nomeAluno').textContent = aluno.nome;
-                aluno_carregado=aluno
-            } else {
-                throw new Error('Aluno não encontrado na lista de alunos.');
+            if (!aluno) {
+                alert("O aluno(a) não possui disciplinas associadas a ele(a).");
+                return;
             }
+            
+            // Exibe o nome do aluno
+            document.getElementById('nomeAluno').textContent = aluno.nome;
+            aluno_carregado=aluno;
+
+            const response_al = await fetch('http://localhost:3000/api/aluno_disciplina');
+            const aluno_disciplina = await response_al.json();
+        
+            if (!aluno_disciplina || aluno_disciplina.length === 0) {
+                alert("O aluno(a) não possui disciplinas associadas a ele(a).");
+                return;
+            }
+            
+            let disciplinas = [];
+            for (let t_d of aluno_disciplina) {
+                if (t_d.aluno_id == aluno_carregado.id) {
+                    disciplinas.push(t_d.disciplina_id);
+                    console.log(disciplinas);
+                }
+            }
+
+            const response_disciplina = await fetch('http://localhost:3000/api/disciplina');
+            const disciplinaS_aluno = await response_disciplina.json();
+        
+            if (!disciplinaS_aluno || disciplinaS_aluno.length === 0) {
+                alert("O aluno(a) não possui disciplinas associadas a ele(a).");
+                return;
+            }
+
+            for (let numero of disciplinas) {
+        // Procurar um objeto em `dados` que tenha o mesmo número da disciplina
+                let disciplinaEncontrada = disciplinaS_aluno.find(dado => dado.id === numero);
+
+        // Se encontrar a disciplina, adicionar ao array de comuns
+                if (disciplinaEncontrada) {
+                    disciplinas_carregadas.push(disciplinaEncontrada);
+                }
+            }
+   
+            console.log('Disciplinas carregadas:', disciplinas_carregadas);  // Para depuração
+            
         } else {
             throw new Error('Aluno não encontrado no localStorage');
         }
+
+        exibirBoletim();
     } catch (error) {
         console.error("Erro ao recuperar o aluno logado:", error);
         alert("Ocorreu um erro ao carregar os dados do aluno. Por favor, tente novamente.");
     }
 });
-/*
+
 // Função para exibir o boletim
 function exibirBoletim() {
-    const aluno = getAlunoLogado();
-    if (!aluno) return;
+    // Verifica se o aluno está carregado
+    if (!aluno_carregado) return;
 
-    let turma_aluno;
+    // Construção do boletim
     try {
-        turma_aluno = new Turma(aluno._turma._nome, aluno._turma._ano_letivo, aluno._turma._turno);
-    } catch (error) {
-        console.error("Erro ao criar a turma:", error);
-        alert("Erro ao carregar a turma.");
-        return;
-    }
+        let boletimDiv = document.getElementById("boletim_grade");
+        boletimDiv.innerHTML = '';
+        let boletimHtml = '';
 
-    const disciplinas_aluno = aluno._turma._disciplinas.map(disciplina => {
-        try {
-            const professor = new Professor(
-                disciplina._professorResponsavel._nome,
-                disciplina._professorResponsavel._email,
-                disciplina._professorResponsavel._nome_usuario,
-                disciplina._professorResponsavel._senha
-            );
-    
-            const novaDisciplina = new Disciplina(
-                disciplina._nome,
-                disciplina._quantidade_aulas,
-                professor
-            );
-    
-            turma_aluno.adicionarDisciplina(novaDisciplina);
-            return novaDisciplina;
-        } catch (error) {
-            console.error(`Erro ao criar a disciplina ${disciplina._nome}:`, error);
-        }
-    });
+        // Criando a tabela para o boletim
+        boletimHtml += `
+            <table border="1" cellpadding="10" cellspacing="0" style="border-collapse: collapse; width: 100%; text-align: center;">
+                <thead>
+                    <tr>
+                        <th>Disciplina</th>
+                        <th>Total de Aulas</th>
+                        <th>Faltas</th>
+                        <th>Frequência (%)</th>
+                        <th>1º Bimestre</th>
+                        <th>2º Bimestre</th>
+                        <th>3º Bimestre</th>
+                        <th>4º Bimestre</th>
+                        <th>Média Final</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+        // Itera sobre as disciplinas para exibir suas informações
+        disciplinas_carregadas.forEach(disciplina => {
+            /*let nota1 = aluno_recriado.Nota_bimestre(disciplina.nome, 1);
+            let nota2 = aluno_recriado.Nota_bimestre(disciplina.nome, 2);
+            let nota3 = aluno_recriado.Nota_bimestre(disciplina.nome, 3);
+            let nota4 = aluno_recriado.Nota_bimestre(disciplina.nome, 4);
+            let frequencia = aluno_recriado.calcularFrequencia(disciplina);
+            if (frequencia === -1 || !frequencia) {
+                frequencia = "-";
+            }*/
+
+            let aulas_totais = '-'; // Este valor precisa ser fornecido ou calculado
+            let faltas_totais = '-'; // Este valor precisa ser fornecido ou calculado
+
+            // Cálculo da média final
+            /*let media_final = '-';
+            if (nota1 !== undefined && nota2 !== undefined && nota3 !== undefined && nota4 !== undefined) {
+                media_final = ((nota1 + nota2 + nota3 + nota4) / 4).toFixed(2); // Média dos 4 bimestres
+            }*/
+
+            // Adicionando a linha da disciplina na tabela
+            boletimHtml += `
+                <tr>
+                    <td>${disciplina.nome}</td>
+                    <td>${aulas_totais}</td>
+                    <td>${faltas_totais}</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>`;
+        });
+
+        boletimHtml += `
+                </tbody>
+            </table>`;
+
+        // Adicionando o conteúdo da tabela à div
+        boletimDiv.innerHTML = boletimHtml;
+
+    } catch (error) {
+        console.error("Erro ao gerar o boletim:", error);
+        alert("Ocorreu um erro ao gerar o boletim.");
+    }
+}
+
+
+
+/*
 
     let aluno_recriado;
     try {
         aluno_recriado = new Aluno(
-            aluno._nome,
-            aluno._data_nascimento,
-            aluno._endereco,
-            aluno._email,
+            aluno_carregado.nome,
+            aluno_carregado.data_nascimento,
+            aluno_carregado.endereco,
+            aluno_carregado.email,
             turma_aluno,
-            aluno._Usuario,
-            aluno._senha
+            aluno_carregado.usuario,
+            aluno_carregado .senha
         );
         turma_aluno.adicionarAluno(aluno_recriado);
     } catch (error) {
@@ -142,87 +230,13 @@ function exibirBoletim() {
     } catch (error) {
         console.error("Erro ao processar as notas do aluno:", error);
     }
+*/
 
-    // Construção do boletim
-    try {
-        let boletimDiv = document.getElementById("boletim_grade");
-        boletimDiv.innerHTML = '';
-        let boletimHtml = ` `;
-
-        // Criando a tabela para o boletim
-        boletimHtml += `
-            <table border="1" cellpadding="10" cellspacing="0" style="border-collapse: collapse; width: 100%; text-align: center;">
-                <thead>
-                    <tr>
-                        <th>Disciplina</th>
-                        <th>Total de Aulas</th>
-                        <th>Faltas</th>
-                        <th>Frequência (%)</th>
-                        <th>1º Bimestre</th>
-                        <th>2º Bimestre</th>
-                        <th>3º Bimestre</th>
-                        <th>4º Bimestre</th>
-                        <th>Média Final</th>
-                    </tr>
-                </thead>
-                <tbody>`;
-
-        // Itera sobre as disciplinas para exibir suas informações
-        aluno_recriado._turma._disciplinas.forEach(disciplina => {
-            let nota1 = aluno_recriado.Nota_bimestre(disciplina.nome, 1);
-            let nota2 = aluno_recriado.Nota_bimestre(disciplina.nome, 2);
-            let nota3 = aluno_recriado.Nota_bimestre(disciplina.nome, 3);
-            let nota4 = aluno_recriado.Nota_bimestre(disciplina.nome, 4);
-            let frequencia = aluno_recriado.calcularFrequencia(disciplina);
-            if (frequencia === -1) {
-                frequencia = "-";
-            }
-
-            let aulas_totais = '-';
-            let faltas_totais = '-';
-
-            // Verifique se o aluno tem registros de faltas para a disciplina
-            if (aluno._aulasEFaltas[disciplina._nome]) {
-                faltas_totais = aluno._aulasEFaltas[disciplina._nome].faltas || 0;
-                aulas_totais = aluno._aulasEFaltas[disciplina._nome].aulasDadas || 0;
-            }
-
-            let media_final = '-';
-            if (aluno_recriado.calcularMediaFinal(disciplina) == -1) {
-                media_final = '-';
-            } else if (aluno_recriado.calcularMediaFinal(disciplina) > 0) {
-                media_final = aluno_recriado.calcularMediaFinal(disciplina);
-            }
-
-            // Adicionando a linha da disciplina na tabela
-            boletimHtml += `
-                <tr>
-                    <td>${disciplina._nome}</td>
-                    <td>${aulas_totais}</td>
-                    <td>${faltas_totais}</td>
+/*                 
                     <td>${frequencia}</td>
                     <td>${nota1}</td>
                     <td>${nota2}</td>
                     <td>${nota3}</td>
                     <td>${nota4}</td>
                     <td>${media_final}</td>
-                </tr>`;
-        });
-
-        boletimHtml += `
-                </tbody>
-            </table>`;
-
-        // Adicionando o conteúdo da tabela à div
-        boletimDiv.innerHTML = boletimHtml;
-
-        console.log(aluno_recriado);
-    } catch (error) {
-        console.error("Erro ao gerar o boletim:", error);
-        alert("Ocorreu um erro ao gerar o boletim.");
-    }
-}
-
-// Chama a função para exibir o boletim ao carregar a página
-exibirBoletim();
 */
