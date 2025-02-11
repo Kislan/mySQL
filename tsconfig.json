@@ -1,7 +1,8 @@
 {
   "compilerOptions": {
+    "moduleResolution": "node",
     "target": "ES2020",              // Usando ES2020 para aproveitar mais recursos do JavaScript moderno
-    "module": "CommonJS",            // Compatível com bundlers e Node.js
+    "module": "ESNext",            // Compatível com bundlers e Node.js
     "rootDir": "./src",              // Diretório fonte onde seus arquivos .ts estão
     "outDir": "./dist",              // Diretório de saída para os arquivos compilados
     "strict": true,                  // Habilita verificações estritas de tipo

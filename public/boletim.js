@@ -1,24 +1,41 @@
-import { Aluno } from "../dist/Aluno.js";
+/*import { Aluno } from "../dist/Aluno.js";
 import { Disciplina } from "../dist/Disciplina.js";
 import { Professor } from "../dist/Professor.js";
 import { Turma } from "../dist/Turma.js";
-import { Nota } from "../dist/Nota.js";
+import { Nota } from "../dist/Nota.js";*/
 
-// Função para tratar possíveis erros ao acessar o aluno logado no localStorage
-function getAlunoLogado() {
+let aluno_carregado;
+
+document.addEventListener('DOMContentLoaded', async function() {
     try {
-        const aluno = JSON.parse(localStorage.getItem('alunoLogado'));
-        if (!aluno) {
+        // Tenta pegar o nome do aluno logado do localStorage
+        let aluno_nomeUsuario = JSON.parse(localStorage.getItem('alunoLogado'));
+        if (aluno_nomeUsuario) {
+            const response = await fetch('http://localhost:3000/api/aluno');
+            if (!response.ok) {
+                throw new Error('Falha ao carregar dados dos alunos.');
+            }
+            const alunos = await response.json();
+
+            // Encontrar o aluno correspondente com base no nome de usuário
+            let aluno = alunos.find(al => al.usuario === aluno_nomeUsuario.usuario);
+
+            if (aluno) {
+                // Exibe o nome do aluno
+                document.getElementById('nomeAluno').textContent = aluno.nome;
+                aluno_carregado=aluno
+            } else {
+                throw new Error('Aluno não encontrado na lista de alunos.');
+            }
+        } else {
             throw new Error('Aluno não encontrado no localStorage');
         }
-        return aluno;
     } catch (error) {
-        console.error("Erro ao obter o aluno logado:", error);
-        alert("Ocorreu um erro ao carregar os dados do aluno.");
-        return null;
+        console.error("Erro ao recuperar o aluno logado:", error);
+        alert("Ocorreu um erro ao carregar os dados do aluno. Por favor, tente novamente.");
     }
-}
-
+});
+/*
 // Função para exibir o boletim
 function exibirBoletim() {
     const aluno = getAlunoLogado();
@@ -208,3 +225,4 @@ function exibirBoletim() {
 
 // Chama a função para exibir o boletim ao carregar a página
 exibirBoletim();
+*/
