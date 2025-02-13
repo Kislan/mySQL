@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import * as disciplinaModel from '../models/disciplinaModel';
+import * as disciplinaModel from '../models/disciplinaModel.js';
 
 // Função para obter os alunos
 export async function getDisciplinas(req: Request, res: Response) {

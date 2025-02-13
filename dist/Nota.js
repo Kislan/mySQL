@@ -1,7 +1,10 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Nota = void 0;
-class Nota {
+export class Nota {
+    //propriedades
+    _valorNota;
+    _disciplina;
+    _aluno;
+    _tipoAvaliacao;
+    _bimestre;
     constructor(valorNota, disciplina, aluno, tipoAvaliacao, bimestre) {
         this._valorNota = valorNota;
         this._disciplina = disciplina;
@@ -47,4 +50,3 @@ class Nota {
         return this._bimestre;
     }
 }
-exports.Nota = Nota;

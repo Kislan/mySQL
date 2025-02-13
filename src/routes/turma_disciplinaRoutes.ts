@@ -1,5 +1,5 @@
 import express from 'express';
-import * as turma_disciplina from '../controllers/turma_disciplinaController';
+import * as turma_disciplina from '../controllers/turma_disciplinaController.js';
 
 const router = express.Router();
 

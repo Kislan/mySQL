@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import * as turma_disciplinaModel from '../models/turma_disciplinaModel';
+import * as turma_disciplinaModel from '../models/turma_disciplinaModel.js';
 
 export async function getTurmas_disciplinas(req: Request, res: Response) {
   try {

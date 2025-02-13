@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import * as turmaModel from '../models/turmaModel';
+import * as turmaModel from '../models/turmaModel.js';
 
 export async function getTurmas(req: Request, res: Response) {
   try {

@@ -1,5 +1,5 @@
 import express from 'express';
-import * as frequenciaController from '../controllers/frequenciaController';
+import * as frequenciaController from '../controllers/frequenciaController.js';
 
 const router = express.Router();
 

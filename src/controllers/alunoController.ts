@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import * as alunoModel from '../models/alunoModel';
+import * as alunoModel from '../models/alunoModel.js';
 
 // Função para obter os alunos
 export async function getAlunos(req: Request, res: Response) {

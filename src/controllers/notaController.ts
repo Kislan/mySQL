@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import * as notaModel from '../models/notaModel';
+import * as notaModel from '../models/notaModel.js';
 
 // Função para obter os alunos
 export async function getNotas(req: Request, res: Response):Promise<void> {

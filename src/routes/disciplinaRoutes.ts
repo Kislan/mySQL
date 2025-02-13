@@ -1,5 +1,5 @@
 import express from 'express';
-import * as disciplinasController from '../controllers/disciplinaController';
+import * as disciplinasController from '../controllers/disciplinaController.js';
 
 const router = express.Router();
 

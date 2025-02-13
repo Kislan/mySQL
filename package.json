@@ -14,6 +14,7 @@
   },
   "name": "mysql",
   "version": "1.0.0",
+  "type": "module",
   "description": "Aplicação com TypeScript e Express.",
   "main": "src/app.ts",  
   "directories": {
@@ -205,8 +206,8 @@
   },
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/app.ts",
-    "start": "ts-node src/app.ts", 
-    "test": "jest" 
+    "start": "tsc && node dist/app.js", 
+    "test": "jest"
   },
   "jest": {
     "preset": "ts-jest",

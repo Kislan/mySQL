@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "moduleResolution": "node",
-    "target": "ES2020",              // Usando ES2020 para aproveitar mais recursos do JavaScript moderno
+    "target": "ESNext",              // Usando ES2020 para aproveitar mais recursos do JavaScript moderno
     "module": "ESNext",            // Compatível com bundlers e Node.js
     "rootDir": "./src",              // Diretório fonte onde seus arquivos .ts estão
     "outDir": "./dist",              // Diretório de saída para os arquivos compilados

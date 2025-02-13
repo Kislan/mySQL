@@ -1,0 +1,11 @@
+import * as professorModel from '../models/professorModel.js';
+// Função para obter os alunos
+export async function getProfessores(req, res) {
+    try {
+        const professores = await professorModel.getProfessores();
+        res.json(professores);
+    }
+    catch (error) {
+        res.status(500).json({ message: 'Erro ao buscar professores' });
+    }
+}

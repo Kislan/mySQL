@@ -1,7 +1,7 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Disciplina = void 0;
-class Disciplina {
+export class Disciplina {
+    _nome;
+    _quantidade_aulas;
+    _professorResponsavel;
     constructor(nome, carga, professor) {
         this._nome = nome;
         this._quantidade_aulas = carga;
@@ -17,4 +17,3 @@ class Disciplina {
         return this._professorResponsavel;
     }
 }
-exports.Disciplina = Disciplina;

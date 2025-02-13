@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import * as frequenciaModel from '../models/registro_frequenciaModel';
+import * as frequenciaModel from '../models/registro_frequenciaModel.js';
 
 // Função para obter os alunos
 export async function getFrequencias(req: Request, res: Response) {

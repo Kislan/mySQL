@@ -1,5 +1,5 @@
 import express from 'express';
-import * as turmaController from '../controllers/turmaController';
+import * as turmaController from '../controllers/turmaController.js';
 
 const router = express.Router();
 

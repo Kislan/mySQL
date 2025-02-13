@@ -1,10 +1,14 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Aluno = void 0;
-class Aluno {
+export class Aluno {
+    _nome;
+    _data_nascimento;
+    _endereco;
+    _email;
+    _turma;
+    _Usuario;
+    _senha;
+    _notas = [];
+    _aulasEFaltas = new Map();
     constructor(nome, dataNascimento, endereco, email, turma, usuario, senha) {
-        this._notas = [];
-        this._aulasEFaltas = new Map();
         this._nome = nome;
         this._data_nascimento = dataNascimento;
         this._endereco = endereco;
@@ -125,4 +129,3 @@ class Aluno {
         return this._notas;
     }
 }
-exports.Aluno = Aluno;

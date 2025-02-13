@@ -2,14 +2,14 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 dotenv.config(); // Isso vai carregar as variáveis de ambiente do arquivo .env
-import turmaRoutes from './routes/turmaRoutes';
-import alunoRoutes from './routes/alunoRoutes';
-import disciplinaRoutes from './routes/disciplinaRoutes';
-import professorRoutes from './routes/professorRoutes';
-import notaRoutes from './routes/notaRoutes'
-import frequenciaRoutes from './routes/frequenciaRoutes'
-import turma_disciplinaRoutes from './routes/turma_disciplinaRoutes'
-import aluno_disciplinaRoutes from './routes/aluno_disciplinaRoutes'
+import turmaRoutes from './routes/turmaRoutes.js';
+import alunoRoutes from './routes/alunoRoutes.js';
+import disciplinaRoutes from './routes/disciplinaRoutes.js';
+import professorRoutes from './routes/professorRoutes.js';
+import notaRoutes from './routes/notaRoutes.js'
+import frequenciaRoutes from './routes/frequenciaRoutes.js'
+import turma_disciplinaRoutes from './routes/turma_disciplinaRoutes.js'
+import aluno_disciplinaRoutes from './routes/aluno_disciplinaRoutes.js'
 
 const app = express();
 

@@ -1,10 +1,10 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Turma = void 0;
-class Turma {
+export class Turma {
+    _nome;
+    _ano_letivo;
+    _turno;
+    _disciplinas = [];
+    _alunos = [];
     constructor(nome, anoLetivo, turno) {
-        this._disciplinas = [];
-        this._alunos = [];
         this._ano_letivo = anoLetivo;
         this._nome = nome;
         this._turno = turno;
@@ -63,4 +63,3 @@ class Turma {
         return this._alunos;
     }
 }
-exports.Turma = Turma;

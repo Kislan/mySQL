@@ -1,8 +1,9 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Professor = void 0;
-const Nota_js_1 = require("./Nota.js");
-class Professor {
+import { Nota } from "./Nota.js";
+export class Professor {
+    _nome;
+    _email;
+    _nome_usuario;
+    _senha;
     constructor(nome, email, nome_usuario, senha) {
         this._nome = nome;
         this._email = email;
@@ -29,7 +30,7 @@ class Professor {
         if (notaAluno < 0 || notaAluno > 100) {
             throw new Error("Nota inválida! A nota deve ser entre 0 e 100.");
         }
-        let nota = new Nota_js_1.Nota(notaAluno, disciplina, aluno, tipoAvaliacao, bimestre);
+        let nota = new Nota(notaAluno, disciplina, aluno, tipoAvaliacao, bimestre);
         aluno.adicionarNota(nota);
         console.log(`Nota de ${nota.valorNota} registrada para ${aluno.nome} do bimestre ${nota.bimestre} na disciplina ${disciplina.nome}`);
     }
@@ -56,4 +57,3 @@ class Professor {
         console.log(`Nota 4° Bimestre: ${aluno.Nota_bimestre(disciplina.nome, 4)}`);
     }
 }
-exports.Professor = Professor;
