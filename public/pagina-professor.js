@@ -3,12 +3,19 @@ import { Aluno } from "../dist/Aluno.js";
 import { Disciplina } from "../dist/Disciplina.js";
 import { Turma } from "../dist/Turma.js";
 import { Nota } from "../dist/Nota.js";*/
-import { ValidationError, DatabaseError, OperationError } from './Excecoes.js';
+class ValidationError extends Error {}
+class DatabaseError extends Error {}
+class OperationError extends Error {}
 
 let professor_carregado;
 let turmas_carregadas = [];
 let disciplina_carregada;
 let alunos_carregados = [];
+let dataAtual = new Date();
+
+// Formatar a data no formato desejado (YYYY-MM-DD)
+let dataFormatada = dataAtual.toISOString(); // Formato ISO 8601, ex: '2025-02-13T03:00:00.000Z'
+
 
 document.addEventListener('DOMContentLoaded', function () {
     async function loadData() {
@@ -198,13 +205,12 @@ async function registrarFrequencia(turma) {
     }
 }
 
-/*
 // Função para salvar a frequência
-function salvarFrequencia(turma) {
+async function salvarFrequencia(turma) {
     try {
         console.log('Salvando a frequência para a turma: ' + turma);
 
-        const alunos_da_turma_atualizados = [];
+        const alunos_da_turma_ = [];
         const quantidadeAulas = parseInt(document.getElementById('qtaulas').value);
 
         // Verificação da quantidade de aulas
@@ -213,156 +219,112 @@ function salvarFrequencia(turma) {
         }
 
         // Buscando alunos do localStorage (ou outra fonte de dados persistente)
-        const alunos = JSON.parse(localStorage.getItem('alunos')) || [];
-
-        if (!alunos) {
-            throw new DatabaseError("Falha ao recuperar dados de alunos do armazenamento local.");
+        const response_alunos = await fetch('http://localhost:3000/api/aluno');
+        if (!response_alunos.ok) {
+            const errorDetails = await response_alunos.json();
+            throw new DatabaseError(`Falha ao carregar dados dos alunos: ${errorDetails.message || 'Erro desconhecido'}`);
         }
 
-        let turminha = '';
-        let aluno_recriado = null;
+        const alunos = await response_alunos.json();
+        console.log(alunos)
 
-        alunos.forEach(aluno => {
-            if (aluno._turma._nome === turma) {
-                const alunoNomeFormatado = aluno._nome.replace(/\s+/g, '_');
-                const faltasInput = document.querySelector(`input[name="faltas_${alunoNomeFormatado}"]`);
-                const faltas = parseInt(faltasInput.value) || 0;
-
-                // Verificando se o campo de faltas está vazio ou inválido
-                if (faltasInput.value === '' || isNaN(faltas) || faltas < 0 || faltas > quantidadeAulas) {
-                    throw new ValidationError("A quantidade de faltas não pode ser maior que o número de aulas ou ser negativa. Verifique os campos.");
-                }
-
-                let turma_aluno = new Turma(aluno._turma._nome, aluno._turma._ano_letivo, aluno._turma._turno);
-
-                const disciplinas = aluno._turma._disciplinas.map(disciplina => {
-                    const professor = new Professor(
-                        disciplina._professorResponsavel._nome,
-                        disciplina._professorResponsavel._email,
-                        disciplina._professorResponsavel._nome_usuario,
-                        disciplina._professorResponsavel._senha
-                    );
-
-                    const novaDisciplina = new Disciplina(
-                        disciplina._nome,
-                        disciplina._quantidade_aulas,
-                        professor
-                    );
-
-                    turma_aluno.adicionarDisciplina(novaDisciplina);
-                    return novaDisciplina;
-                });
-
-                aluno_recriado = new Aluno(
-                    aluno._nome,
-                    aluno._data_nascimento,
-                    aluno._endereco,
-                    aluno._email,
-                    turma_aluno,
-                    aluno._Usuario,
-                    aluno._senha
-                );
-
-                turma_aluno.adicionarAluno(aluno_recriado);
-
-                disciplinas.forEach(disciplina => {
-                    turma_aluno.matricularAlunoNaDisciplina(aluno_recriado, disciplina);
-                });
-
-                turminha = turma_aluno;
-
-                let aulasDadasExistentes = 0;
-                let faltasExistentes = 0;
-
-                // Verifica se o aluno já tem dados de aulas e faltas registrados
-                if (Object.keys(aluno._aulasEFaltas).length > 0) {
-                    turminha._disciplinas.forEach(disciplina => {
-                        if (aluno._aulasEFaltas[disciplina._nome]) {
-                            const dadosAntigos = aluno._aulasEFaltas[disciplina._nome];
-                            aulasDadasExistentes = dadosAntigos.aulasDadas || 0;
-                            faltasExistentes = dadosAntigos.faltas || 0;
-
-                            aluno_recriado.registrarAulasEFaltas(disciplina, aulasDadasExistentes, faltasExistentes);
-                            console.log(`Atualizando - Disciplina: ${disciplina._nome}, Aulas Dadas: ${aulasDadasExistentes}, Faltas: ${faltasExistentes}`);
-                        }
-                    });
-                }
-
-                // Verificação de condição 1: Nova quantidade de aulas dadas não pode ser maior que o total de aulas da disciplina
-                if (Object.keys(aluno._aulasEFaltas).length > 0) {
-                    turminha._disciplinas.forEach(disciplina => {
-                        if (aluno._aulasEFaltas[disciplina._nome]) {
-                            if(disciplina._nome== disciplina_prof._nome){
-                                const dadosAntigos = aluno._aulasEFaltas[disciplina._nome];
-                                let aulasDadasExistentes = dadosAntigos ? dadosAntigos.aulasDadas :0;
-                                if (aulasDadasExistentes + quantidadeAulas > disciplina._quantidade_aulas) {
-                                    throw new ValidationError(`Não é possível adicionar mais aulas do que o total de aulas da disciplina. Carga horária: ${disciplina._quantidade_aulas}. Aulas ministradas + novas aulas: ${aulasDadasExistentes+ quantidadeAulas}`);
-                                }
-                            }
-                        }
-                    });
-                }
-
-                if (parseInt(disciplina_prof._quantidade_aulas)<parseInt(quantidadeAulas)){
-                    throw new ValidationError(`Não é possível adicionar mais aulas do que o total de aulas da disciplina. Carga horária: ${disciplina_prof._quantidade_aulas}.`);
-                }
-
-                // Registrar as novas aulas e faltas
-                prof_instancia.registrarAulasEFaltas(aluno_recriado, disciplina_prof, quantidadeAulas, faltas);
-
-                alunos_da_turma_atualizados.push(aluno_recriado);
+        alunos.forEach(alu => {
+            if (alu.turma_id == turma) {
+                alunos_da_turma_.push(alu);
             }
         });
 
-        alunos_da_turma_atualizados.forEach(alunoAtualizado => {
-            alunos.forEach(aluno_antigo => {
-                if (alunoAtualizado._nome === aluno_antigo._nome) {
-                    if (aluno_antigo._notas.length > 0) {
-                        aluno_antigo._notas.forEach(nota => {
-                            let tipoavaliação = nota._tipoAvaliacao;
-                            let valor = nota._valorNota;
-                            let bimestre = nota._bimestre;
-                            let disci_nota = '';
+        console.log("Turma:", turma);
+        console.log("Alunos encontrados:", alunos_da_turma_);
 
-                            turminha._disciplinas.forEach(d => {
-                                if (d._nome === nota._disciplina._nome) {
-                                    disci_nota = d;
-                                }
-                            });
+        if (alunos_da_turma_.length === 0) {
+            throw new DatabaseError("Nenhum aluno encontrado para essa turma.");
+        }
 
-                            let nota_nova = new Nota(valor, disci_nota, alunoAtualizado, tipoavaliação, bimestre);
-                            alunoAtualizado.adicionarNota(nota_nova);
-                        });
-                    }
+        // Validando a existência dos alunos antes de continuar
+        for (const aluno of alunos_da_turma_) {
+            const alunoNomeFormatado = aluno.usuario.replace(/\s+/g, '_');
+            const faltasInput = document.querySelector(`input[name="faltas_${alunoNomeFormatado}"]`);
+            const faltas = parseInt(faltasInput.value) || 0;
+
+            // Verificando se o campo de faltas está vazio ou inválido
+            if (faltasInput.value === '' || isNaN(faltas) || faltas < 0 || faltas > quantidadeAulas) {
+                throw new ValidationError("A quantidade de faltas não pode ser maior que o número de aulas ou ser negativa. Verifique os campos.");
+            }
+
+            let aulasDadasExistentes = 0;
+            let faltasExistentes = 0;
+
+            const response_frequencia = await fetch('http://localhost:3000/api/frequencia');
+            if (!response_frequencia.ok) {
+                const errorDetails = await response_frequencia.json();
+                throw new DatabaseError(`Falha ao carregar frequências anteriores: ${errorDetails.message || 'Erro desconhecido'}`);
+            }
+
+            const frequencias_anteriores = await response_frequencia.json();
+
+            // Verifica se o aluno já tem dados de aulas e faltas registrados
+            frequencias_anteriores.forEach(p => {
+                if (p.disciplina_id === disciplina_carregada.id && p.aluno_id === aluno.id) {
+                    aulasDadasExistentes += p.aulas_dadas || 0;
+                    faltasExistentes += p.faltas || 0;
                 }
             });
-        });
 
-        // Atualiza os dados no localStorage com os alunos da turma atualizados
-        alunos_da_turma_atualizados.forEach(alunoAtualizado => {
-            const index = alunos.findIndex(aluno => aluno._nome === alunoAtualizado._nome);
-            if (index !== -1) {
-                alunos[index] = alunoAtualizado;
+            // Verificação de condição: Nova quantidade de aulas dadas não pode ser maior que o total de aulas da disciplina
+            if (aulasDadasExistentes + quantidadeAulas > disciplina_carregada.quantidade_aulas) {
+                throw new ValidationError(`Não é possível adicionar mais aulas do que o total de aulas da disciplina. Carga horária: ${disciplina_carregada.quantidade_aulas}. Aulas ministradas + novas aulas: ${aulasDadasExistentes + quantidadeAulas}`);
             }
-        });
 
-        // Usando JSON.stringify com replacer para ignorar _alunos na Turma
-        const alunosLimpos = alunos.map(aluno => {
-            return JSON.parse(JSON.stringify(aluno, (key, value) => {
-                if (key === '_alunos' || key === '_aluno') {
-                    return undefined;  // Ignora a propriedade _alunos da turma
-                }
-                return value;  // Retorna o valor original para outras propriedades
-            }));
-        });
+            if (parseInt(disciplina_carregada.quantidade_aulas) < parseInt(quantidadeAulas)) {
+                throw new ValidationError(`Não é possível adicionar mais aulas do que o total de aulas da disciplina. Carga horária: ${disciplina_carregada.quantidade_aulas}.`);
+            }
 
-        // Salvando no localStorage
-        localStorage.setItem('alunos', JSON.stringify(alunosLimpos));
-
-        // Verifique se os dados foram realmente atualizados
-        console.log('Dados no localStorage após atualização:', localStorage.getItem('alunos'));
+            // Registrar as novas aulas e faltas
+            const dadosFrequencia = {
+                aluno_id: parseInt(aluno.id),
+                disciplina_id: parseInt(disciplina_carregada.id),
+                aulas_dadas: quantidadeAulas,
+                faltas: faltas,
+                data: dataFormatada
+            };
+            
+            // Adicionando logs para verificar os dados antes de enviar
+            console.log('Dados a serem enviados:', dadosFrequencia);
+            
+            // Validação para garantir que os campos obrigatórios estão preenchidos corretamente
+            if (!dadosFrequencia.aluno_id) {
+                throw new ValidationError("O ID do aluno está faltando.");
+            }
+            if (!dadosFrequencia.disciplina_id) {
+                throw new ValidationError("O ID da disciplina está faltando.");
+            }
+            if (isNaN(dadosFrequencia.aulas_dadas) || dadosFrequencia.aulas_dadas <= 0) {
+                throw new ValidationError("A quantidade de aulas dadas deve ser um número válido maior que 0.");
+            }
+            if (isNaN(dadosFrequencia.faltas) || dadosFrequencia.faltas < 0) {
+                throw new ValidationError("A quantidade de faltas deve ser um número válido maior ou igual a 0.");
+            }
+            
+            // Se todos os campos são válidos, enviamos a requisição
+            console.log('Enviando dados para o servidor:', dadosFrequencia);
+            
+            const response = await fetch('http://localhost:3000/api/frequencia', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dadosFrequencia)
+            });
+            
+            if (!response.ok) {
+                const errorDetails = await response.json();
+                console.log('Detalhes do erro:', errorDetails);
+                throw new DatabaseError(`Erro ao registrar frequência: ${errorDetails.message || 'Erro desconhecido'}`);
+            }
+            
+        }
 
         alert("Frequências registradas com sucesso!");
+
     } catch (error) {
         // Se ocorrer algum erro, trataremos aqui
         if (error instanceof ValidationError) {
@@ -380,8 +342,7 @@ function salvarFrequencia(turma) {
             console.error("Erro inesperado:", error.stack);
         }
     }
-}*/
-
+}
 
 // Função para registrar as notas
 async function registrarNotas(turma) {
