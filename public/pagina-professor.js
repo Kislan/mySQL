@@ -5,125 +5,133 @@ import { Turma } from "../dist/Turma.js";
 import { Nota } from "../dist/Nota.js";*/
 import { ValidationError, DatabaseError, OperationError } from './Excecoes.js';
 
-//let professor_carregado;
+let professor_carregado;
+let turmas_carregadas = [];
+let disciplina_carregada;
+let alunos_carregados = [];
 
-// Verifica se o professor está logado
+document.addEventListener('DOMContentLoaded', function () {
+    async function loadData() {
+        try {
+            // Tenta pegar o nome do aluno logado do localStorage
+            let proflogado = JSON.parse(localStorage.getItem('professorLogado'));
+            
+            if (!proflogado) {
+                throw new Error('Professor não encontrado no localStorage');
+            }
 
-document.addEventListener('DOMContentLoaded', async function() {
-    try {
-        // Tenta pegar o nome do aluno logado do localStorage
-        let proflogado = JSON.parse(localStorage.getItem('professorLogado'));
-        if (proflogado) {
             const response_professor = await fetch('http://localhost:3000/api/professor');
             if (!response_professor.ok) {
                 throw new Error('Falha ao carregar dados do professor.');
             }
+
             const professores = await response_professor.json();
 
-            // Encontrar o aluno correspondente com base no nome de usuário
+            // Encontrar o professor correspondente com base no nome de usuário
             let professor = professores.find(prof => prof.nome_usuario === proflogado.nome_usuario);
-
-            if (professor) {
-                document.getElementById('nomeUsuario').textContent = professor.nome;
-            } else {
+            if (!professor) {
                 throw new Error('Professor não encontrado.');
             }
-        } else {
-            throw new Error('Professor não encontrado no localStorage');
-        }
-    } catch (error) {
-        console.error("Erro ao recuperar o professor logado:", error);
-        alert("Ocorreu um erro ao carregar os dados do professor. Por favor, tente novamente.");
-    }
-});
-/*
-// Instancia o professor
-let prof_instancia;
-try {
-    prof_instancia = new Professor(ProfLogado._nome, ProfLogado._email, ProfLogado._nome_usuario, ProfLogado._senha);
-} catch (error) {
-    console.error("Erro ao instanciar o professor:", error);
-    alert("Falha ao instanciar o professor. Verifique os dados fornecidos.");
-}
 
-// Instância a disciplina
-let disciplina_prof = null;
-let alunos = [];
-try {
-    alunos = JSON.parse(localStorage.getItem('alunos')) || [];
-} catch (error) {
-    console.error("Erro ao carregar dados de alunos:", error);
-    alert("Falha ao carregar informações dos alunos.");
-}
+            document.getElementById('nomeUsuario').textContent = professor.nome;
+            professor_carregado = professor;
 
-// Encontrando a disciplina do professor
-alunos.forEach(aluno => {
-    aluno._turma._disciplinas.forEach(disciplina => {
-        if (disciplina._professorResponsavel._nome === ProfLogado._nome) {
-            disciplina_prof = new Disciplina(disciplina._nome, disciplina._quantidade_aulas, prof_instancia);
-        }
-    });
-});
-
-// Lista para armazenar as turmas que o professor é responsável
-let turmasResponsaveis = [];
-
-try {
-    // Percorre os alunos e verifica as turmas em que o professor é responsável
-    alunos.forEach(aluno => {
-        aluno._turma._disciplinas.forEach(disciplina => {
-            if (disciplina._professorResponsavel._nome === ProfLogado._nome) {
-                if (!turmasResponsaveis.includes(aluno._turma._nome)) {
-                    turmasResponsaveis.push(aluno._turma._nome);
-                }
+            const response_disciplina = await fetch('http://localhost:3000/api/disciplina');
+            if (!response_disciplina.ok) {
+                throw new Error('Falha ao carregar dados da disciplina.');
             }
-        });
-    });
-} catch (error) {
-    console.error("Erro ao processar turmas do professor:", error);
-    alert("Falha ao processar as turmas do professor.");
-}
 
-// Exibe as turmas e suas respectivas opções no menu
-try {
-    if (turmasResponsaveis.length > 0) {
-        const menuTurmas = document.getElementById('menuTurmas');
-        turmasResponsaveis.forEach(turma => {
-            const turmaLink = document.createElement('div');
-            turmaLink.innerHTML = `
-                <a href="javascript:void(0)" onclick="registrarFrequencia('${turma}')">${turma}</a>
-                <div>
-                    <a href="javascript:void(0)" class="registrar-notas" data-turma="${turma}">Boletins</a>
-                    <a href="javascript:void(0)" class="registrar-frequencia" data-turma="${turma}">Frequência</a>
-                    <a href="javascript:void(0)" class="gerar-relatorio" data-turma="${turma}">Relatórios Acadêmicos</a>
-                </div>
-            `;
-            menuTurmas.appendChild(turmaLink);
-        });
+            const disciplinas = await response_disciplina.json();
 
-        // Adicionando os eventos de clique para cada ação
-        document.querySelectorAll('.registrar-notas').forEach(link => {
-            link.addEventListener('click', (e) => registrarNotas(e.target.dataset.turma));
-        });
+            // Encontrar a disciplina correspondente com base no professor
+            let disciplina = disciplinas.find(disci => disci.professor_id === professor_carregado.id);
+            if (!disciplina) {
+                throw new Error('Disciplina não encontrada.');
+            }
 
-        document.querySelectorAll('.registrar-frequencia').forEach(link => {
-            link.addEventListener('click', (e) => registrarFrequencia(e.target.dataset.turma));
-        });
+            disciplina_carregada = disciplina;
 
-        document.querySelectorAll('.gerar-relatorio').forEach(link => {
-            link.addEventListener('click', (e) => gerarRelatorio(e.target.dataset.turma));
-        });
-    } else {
-        alert("Não há turmas atribuídas ao professor.");
+            const response_turmas_disci = await fetch('http://localhost:3000/api/turma_disciplina');
+            if (!response_turmas_disci.ok) {
+                throw new Error('Falha ao carregar dados das turmas e disciplinas.');
+            }
+
+            const turmas_disci = await response_turmas_disci.json();
+
+            const response_turmas = await fetch('http://localhost:3000/api/turma');
+            if (!response_turmas.ok) {
+                throw new Error('Falha ao carregar dados das turmas.');
+            }
+
+            const turmas = await response_turmas.json();
+
+            const turmas_dados = turmas.filter(t => 
+                turmas_disci.some(t_d => 
+                    t_d.disciplina_id === disciplina_carregada.id && t_d.turma_id === t.id
+                )
+            );
+
+            turmas_carregadas = turmas_dados;
+            
+            if (turmas_carregadas.length === 0) {
+                console.warn('Nenhuma turma encontrada para a disciplina.');
+            }
+            
+            // Chama a função para exibir as turmas no menu, após turmas_carregadas estar preenchido
+            exibirTurmasNoMenu();
+
+        } catch (error) {
+            console.error("Erro ao recuperar o professor logado:", error);
+            alert("Ocorreu um erro ao carregar os dados do professor. Por favor, tente novamente.");
+        }
     }
-} catch (error) {
-    console.error("Erro ao exibir turmas no menu:", error);
-    alert("Falha ao exibir as turmas atribuídas ao professor.");
-}
+
+    // Função para exibir as turmas no menu
+    function exibirTurmasNoMenu() {
+        try {
+            if (turmas_carregadas.length > 0) {
+                const menuTurmas = document.getElementById('menuTurmas');
+                turmas_carregadas.forEach(turma => {
+                    const turmaLink = document.createElement('div');
+                    turmaLink.innerHTML = `
+                        <!-- Exibe somente o nome da turma, mas passa o id no onclick -->
+                        <a href="javascript:void(0)" onclick="registrarFrequencia('${turma.id}')">${turma.nome}</a>
+                        <div>
+                            <a href="javascript:void(0)" class="registrar-notas" data-turma="${turma.id}">Boletins</a>
+                            <a href="javascript:void(0)" class="registrar-frequencia" data-turma="${turma.id}">Frequência</a>
+                            <a href="javascript:void(0)" class="gerar-relatorio" data-turma="${turma.id}">Relatórios Acadêmicos</a>
+                        </div>
+                    `;
+                    menuTurmas.appendChild(turmaLink);
+                });
+
+                // Adicionando os eventos de clique para cada ação
+                document.querySelectorAll('.registrar-notas').forEach(link => {
+                    link.addEventListener('click', (e) => registrarNotas(e.target.dataset.turma));
+                });
+
+                document.querySelectorAll('.registrar-frequencia').forEach(link => {
+                    link.addEventListener('click', (e) => registrarFrequencia(e.target.dataset.turma));
+                });
+
+                document.querySelectorAll('.gerar-relatorio').forEach(link => {
+                    link.addEventListener('click', (e) => gerarRelatorio(e.target.dataset.turma));
+                });
+            } else {
+                alert("Não há turmas atribuídas ao professor.");
+            }
+        } catch (error) {
+            console.error("Erro ao exibir turmas no menu:", error);
+            alert("Falha ao exibir as turmas atribuídas ao professor.");
+        }
+    }
+
+    loadData(); // Chama a função assíncrona
+});
 
 
 // Função para registrar a frequência
-function registrarFrequencia(turma) {
+async function registrarFrequencia(turma) {
     console.log('Chamaram a função registrarFrequencia para a turma: ' + turma);
 
     let div_resultado = document.getElementById('resultado');
@@ -132,17 +140,22 @@ function registrarFrequencia(turma) {
     const alunos_da_turma = [];
     try {
         // Filtra os alunos que pertencem à turma
-        alunos.forEach(al => {
-            if (al._turma._nome === turma) {
-                alunos_da_turma.push(al);
-            }
-        });
-
-        if (alunos_da_turma.length === 0) {
-            throw new OperationError("Nenhum aluno encontrado para a turma " + turma);
+        const response_alunos = await fetch('http://localhost:3000/api/aluno');
+        if (!response_alunos.ok) {
+            throw new Error('Falha ao carregar dados dos alunos.');
         }
 
-        let resultado = `<h2>Registre as faltas dos alunos da turma ${turma}</h2>`;
+        const alunos = await response_alunos.json();
+
+        alunos.forEach(alu =>{
+            if (alu.turma_id == turma){
+                alunos_da_turma.push(alu);
+                alunos_carregados.push(alu)
+            }
+        })
+
+
+        let resultado = `<h2>Registre as faltas dos alunos da turma</h2>`;
         resultado += `
             <label>Digite a quantidade de aulas:</label>
             <input type="number" id='qtaulas' min="1" required/>
@@ -157,10 +170,10 @@ function registrarFrequencia(turma) {
             <tbody>`;
 
         alunos_da_turma.forEach(aluno => {
-            const alunoNomeFormatado = aluno._nome.replace(/\s+/g, '_'); // Substitui espaços por _
+            const alunoNomeFormatado = aluno.usuario.replace(/\s+/g, '_'); // Substitui espaços por _
             resultado += `
                 <tr>
-                    <td>${aluno._nome.toUpperCase()}</td>
+                    <td>${aluno.nome.toUpperCase()}</td>
                     <td><input type="number" name="faltas_${alunoNomeFormatado}" min="0" max="100" required /></td>
                 </tr>`;
         });
@@ -185,7 +198,7 @@ function registrarFrequencia(turma) {
     }
 }
 
-
+/*
 // Função para salvar a frequência
 function salvarFrequencia(turma) {
     try {
@@ -367,28 +380,31 @@ function salvarFrequencia(turma) {
             console.error("Erro inesperado:", error.stack);
         }
     }
-}
+}*/
 
 
 // Função para registrar as notas
-function registrarNotas(turma) {
+async function registrarNotas(turma) {
     let div_resultado = document.getElementById('resultado');
     div_resultado.innerHTML = '';
 
     const alunos_da_turma = [];
     try {
-        // Filtra os alunos que pertencem à turma
-        alunos.forEach(al => {
-            if (al._turma._nome === turma) {
-                alunos_da_turma.push(al);
-            }
-        });
-
-        if (alunos_da_turma.length === 0) {
-            throw new OperationError("Nenhum aluno encontrado para a turma " + turma);
+        const response_alunos = await fetch('http://localhost:3000/api/aluno');
+        if (!response_alunos.ok) {
+            throw new Error('Falha ao carregar dados dos alunos.');
         }
 
-        let resultado = `<h2>Registre as notas dos alunos da turma ${turma}</h2>`;
+        const alunos = await response_alunos.json();
+
+        alunos.forEach(alu =>{
+            if (alu.turma_id == turma){
+                alunos_da_turma.push(alu);
+                alunos_carregados.push(alu)
+            }
+        })
+
+        let resultado = `<h2>Registre as notas dos alunos da turma </h2>`;
         resultado += `
             <table border="1" cellpadding="10" cellspacing="0" style="border-collapse: collapse; width: 100%; text-align: center;">
             <thead>
@@ -402,10 +418,10 @@ function registrarNotas(turma) {
             <tbody>`;
 
         alunos_da_turma.forEach(aluno => {
-            const alunoNomeFormatado = aluno._nome.replace(/\s+/g, '_'); // Substitui espaços por _
+            const alunoNomeFormatado = aluno.usuario.replace(/\s+/g, '_'); // Substitui espaços por _
             resultado += `
                 <tr>
-                    <td>${aluno._nome.toUpperCase()}</td>
+                    <td>${aluno.nome.toUpperCase()}</td>
                     <td>
                         <select name="tipo_avaliacao_${alunoNomeFormatado}" required>
                             <option value="prova">Prova</option>
@@ -446,7 +462,7 @@ function registrarNotas(turma) {
     }
 }
 
-
+/*
 // Função para salvar as notas
 function salvarNotas(turma) {
     console.log('Salvando as notas para a turma: ' + turma);
@@ -625,61 +641,86 @@ function salvarNotas(turma) {
         console.error('Erro inesperado:', error);
         alert('Ocorreu um erro inesperado. Por favor, tente novamente.');
     }
-}
+}*/
 
 
 
 // Função para gerar o relatório de desempenho
-function gerarRelatorio(turma) {
+async function gerarRelatorio(turma) {
     let div_resultado = document.getElementById('resultado');
     div_resultado.innerHTML = ''; // Limpa o conteúdo da div
 
-    let resultado = `<h2>Gere relatórios acadêmicos sobre seus alunos do ${turma}</h2>`;
+    let resultado = `<h2>Gere relatórios acadêmicos sobre seus alunos</h2>`;
 
     resultado += `<label for="alunoSelect">Escolha o aluno:</label>
                   <select id="alunoSelect" name="aluno" required>
                   <option value="">Selecione um aluno</option>`;
 
-    // Adiciona as opções de alunos no select
-    const alunosDaTurma = alunos.filter(aluno => aluno._turma._nome === turma);
-    if (alunosDaTurma.length === 0) {
-        alert("Não há alunos registrados para essa turma.");
-        return;
-    }
-
-    alunosDaTurma.forEach(aluno => {
-        const alunoNomeFormatado = aluno._nome.replace(/\s+/g, '_'); // Substitui espaços por _
-        resultado += `<option value="${alunoNomeFormatado}">${aluno._nome}</option>`
-    });
-
-    // Fecha a tag select
-    resultado += `</select>`;
-
-    resultado += `<button id="relatorio_aluno">Gerar Relatório</button>`;
-    resultado += `<div id='relatorio'></div>`;
-
-    // Atualiza o conteúdo da div de resultado
-    div_resultado.innerHTML = resultado;
-
-    // Adiciona evento de clique ao botão "Gerar Relatório"
-    document.getElementById('relatorio_aluno').addEventListener('click', function() {
-        try {
-            const alunoSelecionado = document.getElementById('alunoSelect').value;
-            if (!alunoSelecionado) {
-                alert("Por favor, selecione um aluno.");
-                return;
-            }
-
-            // Chama a função que gera o relatório para o aluno selecionado
-            relatorio_aluno(turma, alunoSelecionado);
-        } catch (error) {
-            console.error("Erro ao gerar o relatório: ", error);
-            alert("Ocorreu um erro ao gerar o relatório. Tente novamente.");
+    try {
+        // Faz a requisição para carregar os alunos
+        const response_alunos = await fetch('http://localhost:3000/api/aluno');
+        
+        if (!response_alunos.ok) {
+            throw new Error('Falha ao carregar dados dos alunos.');
         }
-    });
+
+        const alunos = await response_alunos.json();
+        let alunosDaTurma = [];
+
+        // Filtra os alunos da turma
+        alunos.forEach(alu => {
+            if (alu.turma_id == turma) {
+                alunosDaTurma.push(alu);
+            }
+        });
+
+        // Se não encontrar alunos na turma
+        if (alunosDaTurma.length === 0) {
+            alert("Não há alunos registrados para essa turma.");
+            return;
+        }
+
+        // Adiciona as opções de alunos no select
+        alunosDaTurma.forEach(aluno => {
+            const alunoNomeFormatado = aluno.usuario.replace(/\s+/g, '_'); // Substitui espaços por _
+            resultado += `<option value="${alunoNomeFormatado}">${aluno.nome.toUpperCase()}</option>`;
+        });
+
+        // Fecha a tag select
+        resultado += `</select>`;
+
+        resultado += `<button id="relatorio_aluno">Gerar Relatório</button>`;
+        resultado += `<div id='relatorio'></div>`;
+
+        // Atualiza o conteúdo da div de resultado
+        div_resultado.innerHTML = resultado;
+
+        // Adiciona evento de clique ao botão "Gerar Relatório"
+        document.getElementById('relatorio_aluno').addEventListener('click', function () {
+            try {
+                const alunoSelecionado = document.getElementById('alunoSelect').value;
+                if (!alunoSelecionado) {
+                    alert("Por favor, selecione um aluno.");
+                    return;
+                }
+
+                // Chama a função que gera o relatório para o aluno selecionado
+                relatorio_aluno(turma, alunoSelecionado);
+            } catch (error) {
+                console.error("Erro ao gerar o relatório: ", error);
+                alert("Ocorreu um erro ao gerar o relatório. Tente novamente.");
+            }
+        });
+
+    } catch (error) {
+        // Tratamento de erro no fetch ou manipulação do DOM
+        console.error("Erro ao carregar os dados dos alunos ou manipular o DOM:", error);
+        alert("Ocorreu um erro ao carregar os alunos. Tente novamente.");
+    }
 }
 
 
+/*
 function relatorio_aluno(turma) {
     let turminha = null;
     let html = '';  // Definido antes para evitar uso do HTML fora do fluxo
@@ -846,3 +887,51 @@ function relatorio_aluno(turma) {
     }
 }
 */
+
+/*
+// Instancia o professor
+let prof_instancia;
+try {
+    prof_instancia = new Professor(ProfLogado._nome, ProfLogado._email, ProfLogado._nome_usuario, ProfLogado._senha);
+} catch (error) {
+    console.error("Erro ao instanciar o professor:", error);
+    alert("Falha ao instanciar o professor. Verifique os dados fornecidos.");
+}
+
+// Instância a disciplina
+let disciplina_prof = null;
+let alunos = [];
+try {
+    alunos = JSON.parse(localStorage.getItem('alunos')) || [];
+} catch (error) {
+    console.error("Erro ao carregar dados de alunos:", error);
+    alert("Falha ao carregar informações dos alunos.");
+}
+
+// Encontrando a disciplina do professor
+alunos.forEach(aluno => {
+    aluno._turma._disciplinas.forEach(disciplina => {
+        if (disciplina._professorResponsavel._nome === ProfLogado._nome) {
+            disciplina_prof = new Disciplina(disciplina._nome, disciplina._quantidade_aulas, prof_instancia);
+        }
+    });
+});
+
+// Lista para armazenar as turmas que o professor é responsável
+let turmasResponsaveis = [];
+
+try {
+    // Percorre os alunos e verifica as turmas em que o professor é responsável
+    alunos.forEach(aluno => {
+        aluno._turma._disciplinas.forEach(disciplina => {
+            if (disciplina._professorResponsavel._nome === ProfLogado._nome) {
+                if (!turmasResponsaveis.includes(aluno._turma._nome)) {
+                    turmasResponsaveis.push(aluno._turma._nome);
+                }
+            }
+        });
+    });
+} catch (error) {
+    console.error("Erro ao processar turmas do professor:", error);
+    alert("Falha ao processar as turmas do professor.");
+}*/
