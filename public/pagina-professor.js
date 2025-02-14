@@ -512,7 +512,7 @@ async function salvarNotas(turma) {
                     }
 
                     // Envia a nota para o backend
-                    await post_Notas(nota, tipoAvaliacao, bimestre, aluno.id, disciplina_carregada.id);
+                    await post_Notas(nota, tipoAvaliacao.toString(), parseInt(bimestre), parseInt(aluno.id), parseInt(disciplina_carregada.id));
                 }
             } catch (alunoError) {
                 console.error(`Erro ao processar o aluno ${aluno.nome}:`, alunoError);
