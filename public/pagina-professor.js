@@ -202,11 +202,12 @@ async function registrarFrequencia(turma) {
 
 async function post_Frequencia(aluno_id,disciplina_id,aulas_dadas,faltas) {
     try {
-        let data=new Date().toISOString().toString();
+        console.log(aluno_id,disciplina_id,aulas_dadas,faltas)
+        let data_=new Date().toISOString();
         const response = await fetch('http://localhost:3000/api/frequencia', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({aluno_id:aluno_id,disciplina_id:disciplina_id,aulas_dadas:aulas_dadas,faltas:faltas,data_:data})
+            body: JSON.stringify({aluno_id:aluno_id,disciplina_id:disciplina_id,aulas_dadas:aulas_dadas,faltas:faltas,data_:data_})
         });
 
         if (!response.ok) {
@@ -292,7 +293,6 @@ async function salvarFrequencia(turma) {
             if (aulasDadasExistentes + quantidadeAulas > disciplina_carregada.quantidade_aulas) {
                 throw new ValidationError(`Não é possível adicionar mais aulas do que o total de aulas da disciplina. Carga horária: ${disciplina_carregada.quantidade_aulas}. Aulas ministradas + novas aulas: ${aulasDadasExistentes + quantidadeAulas}`);
             }
-
             // Registrar a frequência usando a função separada
             await post_Frequencia(parseInt(aluno.id),parseInt(disciplina_carregada.id),quantidadeAulas,faltas);
         }
