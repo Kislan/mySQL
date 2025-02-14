@@ -13,15 +13,15 @@ export async function getFrequencias(req: Request, res: Response) {
 
 // Função para criar o aluno
 export async function criarFrequencia(req: Request, res: Response):Promise <any> {
-  const { aluno_id,disciplina_id,aulas_dadas,faltas } = req.body;
+  const { aluno_id,disciplina_id,aulas_dadas,faltas,data_ } = req.body;
 
   // Verifica se todos os campos obrigatórios estão presentes
-  if (!aluno_id || !disciplina_id || !aulas_dadas || !faltas) {
+  if (!aluno_id || !disciplina_id || !aulas_dadas || !faltas ||!data_) {
     return res.status(400).json({ message: 'Todos os campos devem ser preenchidos.' });
   }
 
   try {
-    const result = await frequenciaModel.criarFrequencia(aluno_id,disciplina_id,aulas_dadas,faltas);
+    const result = await frequenciaModel.criarFrequencia(aluno_id,disciplina_id,aulas_dadas,faltas,data_);
     return res.status(201).json({ id: result.insertId });
   } catch (error) {
    return  res.status(500).json({ message: 'Erro ao criar frequencia' });

@@ -29,12 +29,13 @@ export async function criarFrequencia(
   aluno_id: number,
   disciplina_id: number,
   aulas_dadas: number,
-  faltas: number
+  faltas: number,
+  data_:string
 ) {
   try {
     const [result] = await pool.execute(
-      'INSERT INTO registro_frequencia (aluno_id, disciplina_id, aulas_dadas, faltas, data) VALUES (?, ?, ?, ?, NOW())',
-      [aluno_id, disciplina_id, aulas_dadas, faltas]
+      'INSERT INTO registro_frequencia (aluno_id, disciplina_id, aulas_dadas, faltas,data_) VALUES (?, ?, ?, ?, ?)',
+      [aluno_id, disciplina_id, aulas_dadas, faltas,data_]
     );
 
     const insertId = (result as ResultSetHeader).insertId;

@@ -21,9 +21,9 @@ export async function getFrequencias() {
     }
 }
 // Função para criar frequência
-export async function criarFrequencia(aluno_id, disciplina_id, aulas_dadas, faltas) {
+export async function criarFrequencia(aluno_id, disciplina_id, aulas_dadas, faltas, data_) {
     try {
-        const [result] = await pool.execute('INSERT INTO registro_frequencia (aluno_id, disciplina_id, aulas_dadas, faltas, data) VALUES (?, ?, ?, ?, NOW())', [aluno_id, disciplina_id, aulas_dadas, faltas]);
+        const [result] = await pool.execute('INSERT INTO registro_frequencia (aluno_id, disciplina_id, aulas_dadas, faltas,data_) VALUES (?, ?, ?, ?, ?)', [aluno_id, disciplina_id, aulas_dadas, faltas, data_]);
         const insertId = result.insertId;
         return { insertId }; // Retorna o ID da frequência inserida
     }
