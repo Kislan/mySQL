@@ -1,8 +1,3 @@
-/*import { Professor } from "../dist/Professor.js";
-import { Aluno } from "../dist/Aluno.js";
-import { Disciplina } from "../dist/Disciplina.js";
-import { Turma } from "../dist/Turma.js";
-import { Nota } from "../dist/Nota.js";*/
 class ValidationError extends Error {}
 class DatabaseError extends Error {}
 class OperationError extends Error {}
@@ -211,7 +206,7 @@ async function post_Frequencia(aluno_id,disciplina_id,aulas_dadas,faltas) {
         const response = await fetch('http://localhost:3000/api/frequencia', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({aluno_id:aluno_id,disciplina_id:disciplina_id,aulas_dadas:aulas_dadas,faltas:faltas,data:data})
+            body: JSON.stringify({aluno_id:aluno_id,disciplina_id:disciplina_id,aulas_dadas:aulas_dadas,faltas:faltas,data_:data})
         });
 
         if (!response.ok) {
@@ -234,10 +229,10 @@ async function post_Frequencia(aluno_id,disciplina_id,aulas_dadas,faltas) {
 
 // Função para salvar a frequência
 async function salvarFrequencia(turma) {
+    console.log('Salvando as notas para a turma: ' + turma);
+    const alunos_da_turma_ = [];
+    let todosOsErros = false; // Variável de controle de erros
     try {
-        console.log('Salvando a frequência para a turma: ' + turma);
-
-        const alunos_da_turma_ = [];
         const quantidadeAulas = parseInt(document.getElementById('qtaulas').value);
 
         // Verificação da quantidade de aulas
@@ -269,7 +264,7 @@ async function salvarFrequencia(turma) {
         for (const aluno of alunos_da_turma_) {
             const alunoNomeFormatado = aluno.usuario.replace(/\s+/g, '_');
             const faltasInput = document.querySelector(`input[name="faltas_${alunoNomeFormatado}"]`);
-            const faltas = parseInt(faltasInput.value) || 0;
+            const faltas = parseInt(faltasInput.value);
 
             // Validação da quantidade de faltas
             if (faltasInput.value === '' || isNaN(faltas) || faltas < 0 || faltas > quantidadeAulas) {
@@ -298,17 +293,8 @@ async function salvarFrequencia(turma) {
                 throw new ValidationError(`Não é possível adicionar mais aulas do que o total de aulas da disciplina. Carga horária: ${disciplina_carregada.quantidade_aulas}. Aulas ministradas + novas aulas: ${aulasDadasExistentes + quantidadeAulas}`);
             }
 
-            // Dados para registrar
-            const dadosFrequencia = {
-                aluno_id: parseInt(aluno.id),
-                disciplina_id: parseInt(disciplina_carregada.id),
-                aulas_dadas: parseInt(quantidadeAulas),
-                faltas: parseInt(faltas),
-                data: new Date().toISOString()
-            };
-
             // Registrar a frequência usando a função separada
-            await post_Frequencia(aluno.id,disciplina_carregada.id,quantidadeAulas,faltas);
+            await post_Frequencia(parseInt(aluno.id),parseInt(disciplina_carregada.id),quantidadeAulas,faltas);
         }
 
         alert("Frequências registradas com sucesso!");
