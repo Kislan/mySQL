@@ -460,7 +460,7 @@ async function salvarNotas(turma) {
         // Loop pelos alunos
         for (const aluno of alunos_da_turma_) {
             try {
-                if (aluno.turma_id === turma) {
+                if (aluno.turma_id == turma) {
                     const alunoNomeFormatado = aluno.usuario.replace(/\s+/g, '_');
 
                     const tipoAvaliacaoElement = document.querySelector(`select[name="tipo_avaliacao_${alunoNomeFormatado}"]`);
