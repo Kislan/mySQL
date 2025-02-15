@@ -1,7 +1,3 @@
-/*import { Aluno } from "../dist/Aluno.js";
-import { Disciplina } from "../dist/Disciplina.js";
-import { Nota } from "../dist/Nota.js";*/
-
 let aluno_carregado;
 let turma_carregada;
 let disciplinas_carregadas=[];
@@ -115,6 +111,7 @@ function exibirBoletim() {
                         <th>3º Bimestre</th>
                         <th>4º Bimestre</th>
                         <th>Média Final</th>
+                        <th>Situação</th>
                     </tr>
                 </thead>
                 <tbody>`;
@@ -129,6 +126,7 @@ function exibirBoletim() {
             let nota2 ;
             let nota3;
             let nota4 ; 
+            let situacao='Cursando'
             for (let nota of notas_carregadas){
                 if (nota.disciplina_id == disciplina.id && nota.bimestre == 1){
                     soma_n1.push(nota)
@@ -171,11 +169,16 @@ function exibirBoletim() {
             let aulas_totais = '-'; // Este valor precisa ser fornecido ou calculado
             let faltas_totais = '-'; // Este valor precisa ser fornecido ou calculado
 
-            // Cálculo da média final
-            /*let media_final = '-';
-            if (nota1 !== undefined && nota2 !== undefined && nota3 !== undefined && nota4 !== undefined) {
+            //Cálculo da média final
+            let media_final = '-';
+            if (!isNaN(nota1) && !isNaN(nota2) && !isNaN(nota3) && !isNaN(nota4)) {
                 media_final = ((nota1 + nota2 + nota3 + nota4) / 4).toFixed(2); // Média dos 4 bimestres
-            }*/
+                if (media_final<60){
+                    situacao="<b>Reprovado</b>";
+                } else if (media_final>= 60){
+                    situacao="<b> Aprovado</b>";
+                }
+            }
 
             // Adicionando a linha da disciplina na tabela
             boletimHtml += `
@@ -188,7 +191,8 @@ function exibirBoletim() {
                     <td>${nota2}</td>
                     <td>${nota3}</td>
                     <td>${nota4}</td>
-                    <td></td>
+                    <td>${media_final}</td>
+                    <td>${situacao}</td>
                 </tr>`;
         });
 
