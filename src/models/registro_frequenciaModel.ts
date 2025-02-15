@@ -29,19 +29,18 @@ export async function criarRegistro_Frequencia(
     aluno_id:number,
     disciplina_id:number,
     aulas_dadas:number,
-    faltas:number,
-    data_:string
+    faltas:number
     
 ) {
   // Verifique se algum valor é inválido antes de tentar inserir no banco
-  if (!aluno_id || !disciplina_id || !aulas_dadas || !faltas || !data_) {
+  if (!aluno_id || !disciplina_id || !aulas_dadas || !faltas) {
     throw new Error('Campos obrigatórios não preenchidos');
   }
 
   try {
     const [result] = await pool.execute(
-      'INSERT INTO registro_frequencia (aluno_id, disciplina_id, aulas_dadas, faltas, data_) VALUES (?,?,?,?,?)',
-      [aluno_id,disciplina_id,aulas_dadas,faltas,data_]
+      'INSERT INTO registro_frequencia (aluno_id, disciplina_id, aulas_dadas, faltas) VALUES (?,?,?,?)',
+      [aluno_id,disciplina_id,aulas_dadas,faltas]
     );
 
     const insertId = (result as ResultSetHeader).insertId;

@@ -21,13 +21,13 @@ export async function getFrequencia() {
     }
 }
 // Função para criar aluno
-export async function criarRegistro_Frequencia(aluno_id, disciplina_id, aulas_dadas, faltas, data_) {
+export async function criarRegistro_Frequencia(aluno_id, disciplina_id, aulas_dadas, faltas) {
     // Verifique se algum valor é inválido antes de tentar inserir no banco
-    if (!aluno_id || !disciplina_id || !aulas_dadas || !faltas || !data_) {
+    if (!aluno_id || !disciplina_id || !aulas_dadas || !faltas) {
         throw new Error('Campos obrigatórios não preenchidos');
     }
     try {
-        const [result] = await pool.execute('INSERT INTO registro_frequencia (aluno_id, disciplina_id, aulas_dadas, faltas, data_) VALUES (?,?,?,?,?)', [aluno_id, disciplina_id, aulas_dadas, faltas, data_]);
+        const [result] = await pool.execute('INSERT INTO registro_frequencia (aluno_id, disciplina_id, aulas_dadas, faltas) VALUES (?,?,?,?)', [aluno_id, disciplina_id, aulas_dadas, faltas]);
         const insertId = result.insertId;
         return { insertId }; // Retorna o ID do aluno inserido
     }

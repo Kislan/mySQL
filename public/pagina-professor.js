@@ -207,23 +207,20 @@ async function post_Frequencia(aluno_id, disciplina_id, aulas_dadas, faltas) {
             throw new Error("Todos os campos devem ser preenchidos corretamente.");
         }
 
-        // Cria a data no formato ISO
-        let data_ = new Date().toISOString();
-
         // Log dos dados enviados
-        console.log('Enviando os seguintes dados:', {
-            aluno_id, 
-            disciplina_id, 
-            aulas_dadas, 
-            faltas, 
-            data_: data_
-        });
+        console.log("Corpo da requisição:", JSON.stringify({
+            aluno_id: aluno_id,
+            disciplina_id: disciplina_id,
+            aulas_dadas: aulas_dadas,
+            faltas: faltas
+        }));
+
 
         // Faz a requisição POST
         const response = await fetch('http://localhost:3000/api/registro_frequencia', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({aluno_id,disciplina_id,aulas_dadas,faltas,data_ })
+            body: JSON.stringify({aluno_id:aluno_id,disciplina_id:disciplina_id,aulas_dadas:aulas_dadas,faltas:faltas })
         });
 
         // Se a resposta não for OK, lança um erro
@@ -310,7 +307,12 @@ async function salvarFrequencia(turma) {
                 throw new ValidationError(`Não é possível adicionar mais aulas do que o total de aulas da disciplina. Carga horária: ${disciplina_carregada.quantidade_aulas}. Aulas ministradas + novas aulas: ${aulasDadasExistentes + quantidadeAulas}`);
             }
             // Registrar a frequência usando a função separada
-            await post_Frequencia(parseInt(aluno.id),parseInt(disciplina_carregada.id),quantidadeAulas,faltas);
+
+            const aluno_id=parseInt(aluno.id)
+            const disciplina_id=parseInt(disciplina_carregada.id)
+            const aulas_dadas=quantidadeAulas
+            
+            await post_Frequencia(aluno_id,disciplina_id,aulas_dadas,faltas)
         }
 
         alert("Frequências registradas com sucesso!");
