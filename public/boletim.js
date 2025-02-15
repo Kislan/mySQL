@@ -68,6 +68,17 @@ document.addEventListener('DOMContentLoaded', async function() {
    
             console.log('Disciplinas carregadas:', disciplinas_carregadas);  // Para depuração
             
+            const response_notas = await fetch('http://localhost:3000/api/nota');
+            if (!response_notas.ok) {
+                throw new Error('Falha ao carregar notas.');
+            }
+            const notas = await response_notas.json();
+
+            notas.forEach(nota => {
+                if (nota.aluno_id==aluno_carregado.id){
+                    notas_carregadas.push(nota)
+                }
+            });
         } else {
             throw new Error('Aluno não encontrado no localStorage');
         }
@@ -110,11 +121,49 @@ function exibirBoletim() {
 
         // Itera sobre as disciplinas para exibir suas informações
         disciplinas_carregadas.forEach(disciplina => {
-            /*let nota1 = aluno_recriado.Nota_bimestre(disciplina.nome, 1);
-            let nota2 = aluno_recriado.Nota_bimestre(disciplina.nome, 2);
-            let nota3 = aluno_recriado.Nota_bimestre(disciplina.nome, 3);
-            let nota4 = aluno_recriado.Nota_bimestre(disciplina.nome, 4);
-            let frequencia = aluno_recriado.calcularFrequencia(disciplina);
+            let soma_n1=[]
+            let soma_n2=[]
+            let soma_n3=[]
+            let soma_n4=[]
+            let nota1 ;
+            let nota2 ;
+            let nota3;
+            let nota4 ; 
+            for (let nota of notas_carregadas){
+                if (nota.disciplina_id == disciplina.id && nota.bimestre == 1){
+                    soma_n1.push(nota)
+                }
+                if( nota.disciplina_id == disciplina.id && nota.bimestre == 2){
+                    soma_n2.push(nota)
+                }
+                if(nota.disciplina_id == disciplina.id && nota.bimestre == 3 ){
+                    soma_n3.push(nota)
+                }
+                if (nota.disciplina_id == disciplina.id && nota.bimestre == 4){
+                    soma_n4.push(nota)
+                }
+            }
+            if (soma_n1.length ==0 ){
+                nota1='-';
+            } else {
+                nota1 = soma_n1.reduce((acc, obj) => acc + parseFloat(obj.valorNota), 0);
+            }
+            if (soma_n2.length ==0 ){
+                nota2='-';
+            } else {
+                nota2 = soma_n2.reduce((acc, obj) => acc + parseFloat(obj.valorNota), 0);
+            }
+            if (soma_n3.length ==0 ){
+                nota3='-';
+            } else {
+                nota3 = soma_n3.reduce((acc, obj) => acc + parseFloat(obj.valorNota), 0);
+            }
+            if (soma_n4.length ==0 ){
+                nota4='-';
+            } else {
+                nota4 = soma_n2.reduce((acc, obj) => acc + parseFloat(obj.valorNota), 0);
+            }
+            /*let frequencia = aluno_recriado.calcularFrequencia(disciplina);
             if (frequencia === -1 || !frequencia) {
                 frequencia = "-";
             }*/
@@ -135,10 +184,10 @@ function exibirBoletim() {
                     <td>${aulas_totais}</td>
                     <td>${faltas_totais}</td>
                     <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
+                    <td>${nota1}</td>
+                    <td>${nota2}</td>
+                    <td>${nota3}</td>
+                    <td>${nota4}</td>
                     <td></td>
                 </tr>`;
         });
