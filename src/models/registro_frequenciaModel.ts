@@ -16,7 +16,7 @@ const pool = mysql.createPool({
 // Função para obter todos os alunos
 export async function getFrequencia() {
   try {
-    const [rows] = await pool.execute('SELECT * FROM registro_frequencia');
+    const [rows] = await pool.execute('SELECT * FROM registros_aulas');
     return rows;
   } catch (error) {
     console.error('Erro ao obter frequências:', error);
@@ -29,7 +29,7 @@ export async function criarRegistro_Frequencia(
     aluno_id:number,
     disciplina_id:number,
     aulas_dadas:number,
-    faltas:number
+    faltas:string
     
 ) {
   // Verifique se algum valor é inválido antes de tentar inserir no banco
@@ -39,7 +39,7 @@ export async function criarRegistro_Frequencia(
 
   try {
     const [result] = await pool.execute(
-      'INSERT INTO registro_frequencia (aluno_id, disciplina_id, aulas_dadas, faltas) VALUES (?,?,?,?)',
+      'INSERT INTO registros_aulas (aluno_id, disciplina_id, aulas_dadas, faltas) VALUES (?,?,?,?)',
       [aluno_id,disciplina_id,aulas_dadas,faltas]
     );
 

@@ -12,7 +12,7 @@ const pool = mysql.createPool({
 // Função para obter todos os alunos
 export async function getFrequencia() {
     try {
-        const [rows] = await pool.execute('SELECT * FROM registro_frequencia');
+        const [rows] = await pool.execute('SELECT * FROM registros_aulas');
         return rows;
     }
     catch (error) {
@@ -27,7 +27,7 @@ export async function criarRegistro_Frequencia(aluno_id, disciplina_id, aulas_da
         throw new Error('Campos obrigatórios não preenchidos');
     }
     try {
-        const [result] = await pool.execute('INSERT INTO registro_frequencia (aluno_id, disciplina_id, aulas_dadas, faltas) VALUES (?,?,?,?)', [aluno_id, disciplina_id, aulas_dadas, faltas]);
+        const [result] = await pool.execute('INSERT INTO registros_aulas (aluno_id, disciplina_id, aulas_dadas, faltas) VALUES (?,?,?,?)', [aluno_id, disciplina_id, aulas_dadas, faltas]);
         const insertId = result.insertId;
         return { insertId }; // Retorna o ID do aluno inserido
     }

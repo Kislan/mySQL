@@ -22,7 +22,7 @@ app.use('/api/aluno', alunoRoutes);
 app.use('/api/disciplina', disciplinaRoutes)
 app.use('/api/professor', professorRoutes)
 app.use('/api/nota', notaRoutes)
-app.use('/api/registro_frequencia',registro_frequencia)
+app.use('/api/registros_aulas',registro_frequencia)
 app.use('/api/turma_disciplina', turma_disciplinaRoutes)
 app.use('/api/aluno_disciplina', aluno_disciplinaRoutes)
 
