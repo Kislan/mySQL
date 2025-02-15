@@ -1,103 +1,146 @@
+// Exceções Personalizadas
+class AlunoNotFoundError extends Error {
+    constructor(message) {
+        super(message);
+        this.name = "AlunoNotFoundError";
+    }
+}
+
+class DataFetchError extends Error {
+    constructor(message) {
+        super(message);
+        this.name = "DataFetchError";
+    }
+}
+
+// Definindo variáveis
 let aluno_carregado;
 let turma_carregada;
-let disciplinas_carregadas=[];
-let notas_carregadas=[];
-let professores_carregados=[];
-let frequencias_carregadas=[];
+let disciplinas_carregadas = [];
+let notas_carregadas = [];
+let professores_carregados = [];
+let frequencias_carregadas = [];
 
-document.addEventListener('DOMContentLoaded', async function() {
+document.addEventListener('DOMContentLoaded', async function () {
     try {
         // Tenta pegar o nome do aluno logado do localStorage
         let aluno_nomeUsuario = JSON.parse(localStorage.getItem('alunoLogado'));
         if (aluno_nomeUsuario) {
-            const response = await fetch('http://localhost:3000/api/aluno');
-            if (!response.ok) {
-                throw new Error('Falha ao carregar dados dos alunos.');
-            }
-            const alunos = await response.json();
+            try {
+                const response = await fetch('http://localhost:3000/api/aluno');
+                if (!response.ok) {
+                    throw new DataFetchError('Falha ao carregar dados dos alunos.');
+                }
+                const alunos = await response.json();
 
-            // Encontrar o aluno correspondente com base no nome de usuário
-            let aluno = alunos.find(al => al.usuario === aluno_nomeUsuario.usuario)
+                let aluno = alunos.find(al => al.usuario === aluno_nomeUsuario.usuario);
 
-            if (!aluno) {
-                alert("O aluno(a) não possui disciplinas associadas a ele(a).");
-                return;
-            }
-            
-            // Exibe o nome do aluno
-            document.getElementById('nomeAluno').textContent = aluno.nome;
-            aluno_carregado=aluno;
+                if (!aluno) {
+                    throw new AlunoNotFoundError("Aluno não encontrado.");
+                }
 
-            const response_al = await fetch('http://localhost:3000/api/aluno_disciplina');
-            const aluno_disciplina = await response_al.json();
-        
-            if (!aluno_disciplina || aluno_disciplina.length === 0) {
-                alert("O aluno(a) não possui disciplinas associadas a ele(a).");
-                return;
-            }
-            
-            let disciplinas = [];
-            for (let t_d of aluno_disciplina) {
-                if (t_d.aluno_id == aluno_carregado.id) {
-                    disciplinas.push(t_d.disciplina_id);
-                    console.log(disciplinas);
+                document.getElementById('nomeAluno').textContent = aluno.nome;
+                aluno_carregado = aluno;
+
+                // Carregando disciplinas associadas
+                await carregarDisciplinas();
+
+                // Carregando frequências
+                await carregarFrequencias();
+
+                // Carregando notas
+                await carregarNotas();
+
+                exibirBoletim();
+
+            } catch (error) {
+                if (error instanceof AlunoNotFoundError) {
+                    alert(error.message);
+                } else if (error instanceof DataFetchError) {
+                    alert(error.message);
+                } else {
+                    console.error("Erro inesperado:", error);
+                    alert("Ocorreu um erro desconhecido. Tente novamente.");
                 }
             }
-
-            const response_disciplina = await fetch('http://localhost:3000/api/disciplina');
-            const disciplinaS_aluno = await response_disciplina.json();
-        
-            if (!disciplinaS_aluno || disciplinaS_aluno.length === 0) {
-                alert("O aluno(a) não possui disciplinas associadas a ele(a).");
-                return;
-            }
-
-            for (let numero of disciplinas) {
-        // Procurar um objeto em `dados` que tenha o mesmo número da disciplina
-                let disciplinaEncontrada = disciplinaS_aluno.find(dado => dado.id === numero);
-
-        // Se encontrar a disciplina, adicionar ao array de comuns
-                if (disciplinaEncontrada) {
-                    disciplinas_carregadas.push(disciplinaEncontrada);
-                }
-            }
-   
-            console.log('Disciplinas carregadas:', disciplinas_carregadas);  // Para depuração
-            
-            const response_notas = await fetch('http://localhost:3000/api/nota');
-            if (!response_notas.ok) {
-                throw new Error('Falha ao carregar notas.');
-            }
-            const notas = await response_notas.json();
-
-            notas.forEach(nota => {
-                if (nota.aluno_id==aluno_carregado.id){
-                    notas_carregadas.push(nota)
-                }
-            });
         } else {
-            throw new Error('Aluno não encontrado no localStorage');
+            throw new AlunoNotFoundError('Aluno não encontrado no localStorage');
         }
-
-        exibirBoletim();
     } catch (error) {
         console.error("Erro ao recuperar o aluno logado:", error);
         alert("Ocorreu um erro ao carregar os dados do aluno. Por favor, tente novamente.");
     }
 });
 
-// Função para exibir o boletim
-function exibirBoletim() {
-    // Verifica se o aluno está carregado
-    if (!aluno_carregado) return;
+async function carregarDisciplinas() {
+    try {
+        const response_al = await fetch('http://localhost:3000/api/aluno_disciplina');
+        const aluno_disciplina = await response_al.json();
 
-    // Construção do boletim
+        if (!aluno_disciplina || aluno_disciplina.length === 0) {
+            alert("O aluno(a) não possui disciplinas associadas a ele(a).");
+            return;
+        }
+
+        let disciplinas = aluno_disciplina
+            .filter(t_d => t_d.aluno_id === aluno_carregado.id)
+            .map(t_d => t_d.disciplina_id);
+
+        const response_disciplina = await fetch('http://localhost:3000/api/disciplina');
+        const disciplinaS_aluno = await response_disciplina.json();
+
+        if (!disciplinaS_aluno || disciplinaS_aluno.length === 0) {
+            alert("O aluno(a) não possui disciplinas associadas a ele(a).");
+            return;
+        }
+
+        disciplinas.forEach(numero => {
+            let disciplinaEncontrada = disciplinaS_aluno.find(dado => dado.id === numero);
+            if (disciplinaEncontrada) {
+                disciplinas_carregadas.push(disciplinaEncontrada);
+            }
+        });
+
+    } catch (error) {
+        console.error("Erro ao carregar disciplinas:", error);
+        alert("Erro ao carregar as disciplinas.");
+    }
+}
+
+async function carregarFrequencias() {
+    try {
+        const response_frequencia = await fetch('http://localhost:3000/api/registros_aulas');
+        if (!response_frequencia.ok) {
+            throw new DataFetchError('Falha ao carregar frequências.');
+        }
+        const freq = await response_frequencia.json();
+        frequencias_carregadas = freq.filter(f => f.aluno_id === aluno_carregado.id);
+    } catch (error) {
+        console.error("Erro ao carregar frequências:", error);
+        alert("Erro ao carregar as frequências.");
+    }
+}
+
+async function carregarNotas() {
+    try {
+        const response_notas = await fetch('http://localhost:3000/api/nota');
+        if (!response_notas.ok) {
+            throw new DataFetchError('Falha ao carregar notas.');
+        }
+        const notas = await response_notas.json();
+        notas_carregadas = notas.filter(nota => nota.aluno_id === aluno_carregado.id);
+    } catch (error) {
+        console.error("Erro ao carregar notas:", error);
+        alert("Erro ao carregar as notas.");
+    }
+}
+
+function exibirBoletim() {
     try {
         let boletimDiv = document.getElementById("boletim_grade");
         boletimDiv.innerHTML = '';
         let boletimHtml = '';
 
-        // Criando a tabela para o boletim
         boletimHtml += `
             <table border="1" cellpadding="10" cellspacing="0" style="border-collapse: collapse; width: 100%; text-align: center;">
                 <thead>
@@ -116,78 +159,54 @@ function exibirBoletim() {
                 </thead>
                 <tbody>`;
 
-        // Itera sobre as disciplinas para exibir suas informações
         disciplinas_carregadas.forEach(disciplina => {
-            let soma_n1=[]
-            let soma_n2=[]
-            let soma_n3=[]
-            let soma_n4=[]
-            let nota1 ;
-            let nota2 ;
-            let nota3;
-            let nota4 ; 
-            let situacao='Cursando'
-            for (let nota of notas_carregadas){
-                if (nota.disciplina_id == disciplina.id && nota.bimestre == 1){
-                    soma_n1.push(nota)
-                }
-                if( nota.disciplina_id == disciplina.id && nota.bimestre == 2){
-                    soma_n2.push(nota)
-                }
-                if(nota.disciplina_id == disciplina.id && nota.bimestre == 3 ){
-                    soma_n3.push(nota)
-                }
-                if (nota.disciplina_id == disciplina.id && nota.bimestre == 4){
-                    soma_n4.push(nota)
-                }
-            }
-            if (soma_n1.length ==0 ){
-                nota1='-';
-            } else {
-                nota1 = soma_n1.reduce((acc, obj) => acc + parseFloat(obj.valorNota), 0);
-            }
-            if (soma_n2.length ==0 ){
-                nota2='-';
-            } else {
-                nota2 = soma_n2.reduce((acc, obj) => acc + parseFloat(obj.valorNota), 0);
-            }
-            if (soma_n3.length ==0 ){
-                nota3='-';
-            } else {
-                nota3 = soma_n3.reduce((acc, obj) => acc + parseFloat(obj.valorNota), 0);
-            }
-            if (soma_n4.length ==0 ){
-                nota4='-';
-            } else {
-                nota4 = soma_n4.reduce((acc, obj) => acc + parseFloat(obj.valorNota), 0)
-                console.log(soma_n4);
-            }
-            /*let frequencia = aluno_recriado.calcularFrequencia(disciplina);
-            if (frequencia === -1 || !frequencia) {
-                frequencia = "-";
-            }*/
+            let soma_n1 = [], soma_n2 = [], soma_n3 = [], soma_n4 = [];
+            let nota1, nota2, nota3, nota4;
+            let situacao = 'Cursando';
 
-            let aulas_totais = '-'; // Este valor precisa ser fornecido ou calculado
-            let faltas_totais = '-'; // Este valor precisa ser fornecido ou calculado
+            for (let nota of notas_carregadas) {
+                if (nota.disciplina_id === disciplina.id && nota.bimestre === 1) soma_n1.push(nota);
+                if (nota.disciplina_id === disciplina.id && nota.bimestre === 2) soma_n2.push(nota);
+                if (nota.disciplina_id === disciplina.id && nota.bimestre === 3) soma_n3.push(nota);
+                if (nota.disciplina_id === disciplina.id && nota.bimestre === 4) soma_n4.push(nota);
+            }
 
-            //Cálculo da média final
+            nota1 = soma_n1.length === 0 ? '-' : soma_n1.reduce((acc, obj) => acc + parseFloat(obj.valorNota), 0);
+            nota2 = soma_n2.length === 0 ? '-' : soma_n2.reduce((acc, obj) => acc + parseFloat(obj.valorNota), 0);
+            nota3 = soma_n3.length === 0 ? '-' : soma_n3.reduce((acc, obj) => acc + parseFloat(obj.valorNota), 0);
+            nota4 = soma_n4.length === 0 ? '-' : soma_n4.reduce((acc, obj) => acc + parseFloat(obj.valorNota), 0);
+
+            let aulas_e_faltas = [];
+            let frequencia = '-';
+            let aulas_totais = '-', faltas_totais = '-';
+
+            frequencias_carregadas.forEach(aulas_faltas => {
+                if (aulas_faltas.disciplina_id === disciplina.id && aulas_faltas.aluno_id === aluno_carregado.id) {
+                    aulas_e_faltas.push(aulas_faltas);
+                }
+            });
+
+            if (aulas_e_faltas.length > 0) {
+                aulas_totais = aulas_e_faltas.reduce((acc, obj) => acc + parseFloat(obj.aulas_dadas), 0);
+                faltas_totais = aulas_e_faltas.reduce((acc, obj) => acc + parseFloat(obj.faltas), 0);
+                if (aulas_totais > 0) {
+                    frequencia = ((aulas_totais - faltas_totais) * 100) / aulas_totais;
+                    frequencia = Number(frequencia).toFixed(2);
+                }
+            }
+
             let media_final = '-';
             if (!isNaN(nota1) && !isNaN(nota2) && !isNaN(nota3) && !isNaN(nota4)) {
-                media_final = ((nota1 + nota2 + nota3 + nota4) / 4).toFixed(2); // Média dos 4 bimestres
-                if (media_final<60){
-                    situacao="<b>Reprovado</b>";
-                } else if (media_final>= 60){
-                    situacao="<b> Aprovado</b>";
-                }
+                media_final = ((nota1 + nota2 + nota3 + nota4) / 4).toFixed(2);
+                situacao = media_final < 60 ? "<b>Reprovado</b>" : "<b>Aprovado</b>";
             }
 
-            // Adicionando a linha da disciplina na tabela
             boletimHtml += `
                 <tr>
                     <td>${disciplina.nome}</td>
                     <td>${aulas_totais}</td>
                     <td>${faltas_totais}</td>
-                    <td></td>
+                    <td>${frequencia}</td>
                     <td>${nota1}</td>
                     <td>${nota2}</td>
                     <td>${nota3}</td>
@@ -200,8 +219,6 @@ function exibirBoletim() {
         boletimHtml += `
                 </tbody>
             </table>`;
-
-        // Adicionando o conteúdo da tabela à div
         boletimDiv.innerHTML = boletimHtml;
 
     } catch (error) {
@@ -209,88 +226,3 @@ function exibirBoletim() {
         alert("Ocorreu um erro ao gerar o boletim.");
     }
 }
-
-
-
-/*
-
-    let aluno_recriado;
-    try {
-        aluno_recriado = new Aluno(
-            aluno_carregado.nome,
-            aluno_carregado.data_nascimento,
-            aluno_carregado.endereco,
-            aluno_carregado.email,
-            turma_aluno,
-            aluno_carregado.usuario,
-            aluno_carregado .senha
-        );
-        turma_aluno.adicionarAluno(aluno_recriado);
-    } catch (error) {
-        console.error("Erro ao criar o aluno:", error);
-        alert("Erro ao carregar os dados do aluno.");
-        return;
-    }
-
-    disciplinas_aluno.forEach(disciplina => {
-        try {
-            turma_aluno.matricularAlunoNaDisciplina(aluno_recriado, disciplina);
-        } catch (error) {
-            console.error(`Erro ao matricular aluno na disciplina ${disciplina._nome}:`, error);
-        }
-    });
-
-    // Variáveis para armazenar as aulas e faltas
-    let aulasDadasExistentes = 0;
-    let faltasExistentes = 0;
-
-    // Verifica se o aluno já tem dados de aulas e faltas registrados
-    try {
-        if (Object.keys(aluno._aulasEFaltas).length > 0) {
-            turma_aluno._disciplinas.forEach(disciplina => {
-                if (aluno._aulasEFaltas[disciplina._nome]) {
-                    const dadosAntigos = aluno._aulasEFaltas[disciplina._nome];
-                    aulasDadasExistentes = dadosAntigos.aulasDadas || 0;
-                    faltasExistentes = dadosAntigos.faltas || 0;
-
-                    aluno_recriado.registrarAulasEFaltas(disciplina, aulasDadasExistentes, faltasExistentes);
-                    console.log(`Atualizando - Disciplina: ${disciplina._nome}, Aulas Dadas: ${aulasDadasExistentes}, Faltas: ${faltasExistentes}`);
-                }
-            });
-        }
-    } catch (error) {
-        console.error("Erro ao processar as aulas e faltas do aluno:", error);
-    }
-
-    // Processamento das notas
-    try {
-        if (aluno._notas.length > 0) {
-            aluno._notas.forEach(nota => {
-                let tipoavaliação = nota._tipoAvaliacao;
-                let valor = nota._valorNota;
-                let bimestre = nota._bimestre;
-                let disci_nota = '';
-    
-                turma_aluno._disciplinas.forEach(d => {
-                    if (d._nome === nota._disciplina._nome) {
-                        disci_nota = d;
-                    }
-                });
-    
-                let nota_nova = new Nota(valor, disci_nota, aluno_recriado, tipoavaliação, bimestre);
-                aluno_recriado.adicionarNota(nota_nova);
-            });
-        }
-    } catch (error) {
-        console.error("Erro ao processar as notas do aluno:", error);
-    }
-*/
-
-/*                 
-                    <td>${frequencia}</td>
-                    <td>${nota1}</td>
-                    <td>${nota2}</td>
-                    <td>${nota3}</td>
-                    <td>${nota4}</td>
-                    <td>${media_final}</td>
-*/
