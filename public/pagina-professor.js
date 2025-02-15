@@ -647,7 +647,29 @@ async function relatorio_aluno(turma) {
         }
         const notas = await response_notas.json();
 
-        let frequencia='-';
+        const response_freq = await fetch('http://localhost:3000/api/registros_aulas');
+        if (!response_freq.ok) {
+            throw new Error('Falha ao carregar frequência.');
+        }
+        const freq = await response_freq.json();
+
+        let aulas_e_faltas = [];
+        let frequencia = '-';
+
+        freq.forEach(aulas_faltas => {
+            if (aulas_faltas.disciplina_id === disciplina_carregada.id && aulas_faltas.aluno_id === aluno.id) {
+                aulas_e_faltas.push(aulas_faltas);
+            }
+        });
+
+        if (aulas_e_faltas.length > 0) {
+            let aulas_totais = aulas_e_faltas.reduce((acc, obj) => acc + parseFloat(obj.aulas_dadas), 0);
+            let faltas_totais = aulas_e_faltas.reduce((acc, obj) => acc + parseFloat(obj.faltas), 0);
+            if (aulas_totais > 0) {
+                frequencia = ((aulas_totais - faltas_totais) * 100) / aulas_totais;
+                frequencia = Number(frequencia).toFixed(2);
+            }
+        }
 
         // Tabela de Frequência
         html += `<h3>Frequência do Aluno: ${aluno.nome}</h3>`;
