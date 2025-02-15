@@ -159,7 +159,8 @@ function exibirBoletim() {
             if (soma_n4.length ==0 ){
                 nota4='-';
             } else {
-                nota4 = soma_n2.reduce((acc, obj) => acc + parseFloat(obj.valorNota), 0);
+                nota4 = soma_n4.reduce((acc, obj) => acc + parseFloat(obj.valorNota), 0)
+                console.log(soma_n4);
             }
             /*let frequencia = aluno_recriado.calcularFrequencia(disciplina);
             if (frequencia === -1 || !frequencia) {

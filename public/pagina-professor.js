@@ -223,7 +223,7 @@ async function post_Frequencia(aluno_id, disciplina_id, aulas_dadas, faltas) {
         const response = await fetch('http://localhost:3000/api/registro_frequencia', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({aluno_id: 1, disciplina_id: 5, aulas_dadas: 4, faltas: 0, data_: '2025-02-15T17:18:18.573Z' })
+            body: JSON.stringify({aluno_id,disciplina_id,aulas_dadas,faltas,data_ })
         });
 
         // Se a resposta não for OK, lança um erro
@@ -610,110 +610,48 @@ async function gerarRelatorio(turma) {
 }
 
 
-/*
-function relatorio_aluno(turma) {
-    let turminha = null;
+
+async function relatorio_aluno(turma) {
+    let alunos_da_turma_=[];
     let html = '';  // Definido antes para evitar uso do HTML fora do fluxo
     try {
         // Obter o nome do aluno do select e substituir espaços por underscores
         const nome_do_aluno = document.querySelector(`#alunoSelect`).value.replace(/\s+/g, '_');
 
         // Verificar se há dados no localStorage
-        const alunos = JSON.parse(localStorage.getItem('alunos')) || [];
+        const response_alunos = await fetch('http://localhost:3000/api/aluno');
+        if (!response_alunos.ok) {
+            const errorDetails = await response_alunos.json();
+            throw new Error(`Falha ao carregar dados dos alunos: ${errorDetails.message || 'Erro desconhecido'}`);
+        }
+
+        const alunos = await response_alunos.json();
+        alunos.forEach(alu => {
+            if (alu.turma_id == turma) {
+                alunos_da_turma_.push(alu);
+            }
+        });
 
         // Verificar se o aluno existe
-        const aluno = alunos.find(aluno => {
-            const nomeAlunoReformado = aluno._nome.replace(/\s+/g, '_');
-            return aluno._turma._nome === turma && nomeAlunoReformado === nome_do_aluno;
+        const aluno = alunos_da_turma_.find(aluno => {
+            const nomeAlunoReformado = aluno.usuario.replace(/\s+/g, '_');
+            return nomeAlunoReformado === nome_do_aluno;
         });
 
         if (!aluno) {
             throw new Error(`Aluno não encontrado para a turma ${turma} e nome ${nome_do_aluno}`);
         }
 
-        let turma_aluno = new Turma(aluno._turma._nome, aluno._turma._ano_letivo, aluno._turma._turno);
-
-        // Criando as disciplinas e associando com os professores
-        const disciplinas = aluno._turma._disciplinas.map(disciplina => {
-            const professor = new Professor(
-                disciplina._professorResponsavel._nome,
-                disciplina._professorResponsavel._email,
-                disciplina._professorResponsavel._nome_usuario,
-                disciplina._professorResponsavel._senha
-            );
-
-            const novaDisciplina = new Disciplina(
-                disciplina._nome,
-                disciplina._quantidade_aulas,
-                professor
-            );
-
-            turma_aluno.adicionarDisciplina(novaDisciplina);
-            return novaDisciplina;
-        });
-
-        // Recria a instância de Aluno
-        const aluno_recriado = new Aluno(
-            aluno._nome,
-            aluno._data_nascimento,
-            aluno._endereco,
-            aluno._email,
-            turma_aluno, // Atribuindo a turma recriada
-            aluno._Usuario,
-            aluno._senha
-        );
-
-        turma_aluno.adicionarAluno(aluno_recriado);
-
-        // Matricula o aluno nas disciplinas da turma
-        disciplinas.forEach(disciplina => {
-            turma_aluno.matricularAlunoNaDisciplina(aluno_recriado, disciplina);
-        });
-        turminha = turma_aluno;
-
-        // Processar as notas do aluno
-        if (aluno._notas.length > 0) {
-            aluno._notas.forEach(nota => {
-                let tipoavaliação = nota._tipoAvaliacao;
-                let valor = nota._valorNota;
-                let bimestre = nota._bimestre;
-                let disci_nota = '';
-
-                turminha._disciplinas.forEach(d => {
-                    if (d._nome === nota._disciplina._nome) {
-                        disci_nota = d;
-                    }
-                });
-
-                let nota_nova = new Nota(valor, disci_nota, aluno_recriado, tipoavaliação, bimestre);
-                aluno_recriado.adicionarNota(nota_nova);
-            });
+        const response_notas = await fetch('http://localhost:3000/api/nota');
+        if (!response_notas.ok) {
+            throw new Error('Falha ao carregar notas.');
         }
+        const notas = await response_notas.json();
 
-        let aulasDadasExistentes = 0;
-        let faltasExistentes = 0;
-
-        // Verifica se o aluno já tem dados de aulas e faltas registrados
-        if (Object.keys(aluno._aulasEFaltas).length > 0) {
-            turminha._disciplinas.forEach(disciplina => {
-                if (aluno._aulasEFaltas[disciplina._nome]) {
-                    const dadosAntigos = aluno._aulasEFaltas[disciplina._nome];
-                    aulasDadasExistentes = dadosAntigos.aulasDadas || 0;
-                    faltasExistentes = dadosAntigos.faltas || 0;
-
-                    aluno_recriado.registrarAulasEFaltas(disciplina, aulasDadasExistentes, faltasExistentes);
-                }
-            });
-        }
-
-        // Gerar as tabelas para o aluno
-        let frequencia = aluno_recriado.calcularFrequencia(disciplina_prof);
-        if (frequencia === -1) {
-            frequencia = "-";
-        }
+        let frequencia='-';
 
         // Tabela de Frequência
-        html += `<h3>Frequência do Aluno: ${aluno_recriado._nome}</h3>`;
+        html += `<h3>Frequência do Aluno: ${aluno.nome}</h3>`;
         html += `
         <table class="relatorio-tabela">
                 <thead>
@@ -745,12 +683,12 @@ function relatorio_aluno(turma) {
             `;
 
             // Adicionar as notas do aluno para o bimestre
-            aluno_recriado._notas.forEach(nota => {
-                if (nota._bimestre == i && nota._disciplina.nome === disciplina_prof._nome) {
+            notas.forEach(nota => {
+                if (nota.bimestre == i && nota.disciplina_id === disciplina_carregada.id && nota.aluno_id == aluno.id) {
                     html += `
                     <tr>
-                        <td>${nota._tipoAvaliacao}</td>
-                        <td>${nota._valorNota}</td>
+                        <td>${nota.tipo_avaliacao}</td>
+                        <td>${nota.valorNota}</td>
                     </tr>
                     `;
                 }
@@ -776,4 +714,3 @@ function relatorio_aluno(turma) {
         `;
     }
 }
-*/
