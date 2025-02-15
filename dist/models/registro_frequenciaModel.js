@@ -9,26 +9,30 @@ const pool = mysql.createPool({
     database: process.env.DB_NAME,
     port: Number(process.env.DB_PORT),
 });
-// Função para obter todas as frequências
-export async function getFrequencias() {
+// Função para obter todos os alunos
+export async function getFrequencia() {
     try {
         const [rows] = await pool.execute('SELECT * FROM registro_frequencia');
         return rows;
     }
     catch (error) {
         console.error('Erro ao obter frequências:', error);
-        throw new Error('Erro ao obter dados de frequências');
+        throw new Error('Erro ao obter dados das frequências');
     }
 }
-// Função para criar frequência
-export async function criarFrequencia(aluno_id, disciplina_id, aulas_dadas, faltas, data_) {
+// Função para criar aluno
+export async function criarRegistro_Frequencia(aluno_id, disciplina_id, aulas_dadas, faltas, data_) {
+    // Verifique se algum valor é inválido antes de tentar inserir no banco
+    if (!aluno_id || !disciplina_id || !aulas_dadas || !faltas || !data_) {
+        throw new Error('Campos obrigatórios não preenchidos');
+    }
     try {
-        const [result] = await pool.execute('INSERT INTO registro_frequencia (aluno_id, disciplina_id, aulas_dadas, faltas,data_) VALUES (?, ?, ?, ?, ?)', [aluno_id, disciplina_id, aulas_dadas, faltas, data_]);
+        const [result] = await pool.execute('INSERT INTO registro_frequencia (aluno_id, disciplina_id, aulas_dadas, faltas, data_) VALUES (?,?,?,?,?)', [aluno_id, disciplina_id, aulas_dadas, faltas, data_]);
         const insertId = result.insertId;
-        return { insertId }; // Retorna o ID da frequência inserida
+        return { insertId }; // Retorna o ID do aluno inserido
     }
     catch (error) {
         console.error('Erro ao criar frequência:', error);
-        throw new Error('Erro ao inserir dados de frequência');
+        throw new Error('Erro ao inserir dados');
     }
 }

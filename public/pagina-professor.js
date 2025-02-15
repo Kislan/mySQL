@@ -200,32 +200,48 @@ async function registrarFrequencia(turma) {
     }
 }
 
-async function post_Frequencia(aluno_id,disciplina_id,aulas_dadas,faltas) {
+async function post_Frequencia(aluno_id, disciplina_id, aulas_dadas, faltas) {
     try {
-        console.log(aluno_id,disciplina_id,aulas_dadas,faltas)
-        let data_=new Date().toISOString();
-        const response = await fetch('http://localhost:3000/api/frequencia', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({aluno_id:aluno_id,disciplina_id:disciplina_id,aulas_dadas:aulas_dadas,faltas:faltas,data_:data_})
+        // Validação dos dados de entrada
+        if (!aluno_id || !disciplina_id || typeof aulas_dadas !== 'number' || typeof faltas !== 'number') {
+            throw new Error("Todos os campos devem ser preenchidos corretamente.");
+        }
+
+        // Cria a data no formato ISO
+        let data_ = new Date().toISOString();
+
+        // Log dos dados enviados
+        console.log('Enviando os seguintes dados:', {
+            aluno_id, 
+            disciplina_id, 
+            aulas_dadas, 
+            faltas, 
+            data_: data_
         });
 
+        // Faz a requisição POST
+        const response = await fetch('http://localhost:3000/api/registro_frequencia', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({aluno_id: 1, disciplina_id: 5, aulas_dadas: 4, faltas: 0, data_: '2025-02-15T17:18:18.573Z' })
+        });
+
+        // Se a resposta não for OK, lança um erro
         if (!response.ok) {
             const errorDetails = await response.json();
-            console.log('Detalhes do erro:', errorDetails);
-            throw new DatabaseError(`Erro ao registrar frequência: ${errorDetails.message || 'Erro desconhecido'}`);
+            console.error('Erro detalhado da API:', errorDetails);
+            throw new Error(`Erro ao registrar frequência: ${errorDetails.message || 'Erro desconhecido'}`);
         }
 
+        // Sucesso
+        console.log('Frequência registrada com sucesso!');
+
     } catch (error) {
-        if (error instanceof DatabaseError) {
-            console.error("Erro no banco de dados:", error.stack);
-            throw new DatabaseError(`Erro ao registrar frequência: ${error.message}`);
-        } else {
-            console.error("Erro inesperado:", error.stack);
-            throw new Error("Ocorreu um erro inesperado ao registrar a frequência.");
-        }
+        console.error("Erro ao registrar frequência:", error);
+        throw new Error("Ocorreu um erro ao registrar a frequência.");
     }
 }
+
 
 
 // Função para salvar a frequência
@@ -274,7 +290,7 @@ async function salvarFrequencia(turma) {
 
             let aulasDadasExistentes = 0;
 
-            const response_frequencia = await fetch('http://localhost:3000/api/frequencia');
+            const response_frequencia = await fetch('http://localhost:3000/api/registro_frequencia');
             if (!response_frequencia.ok) {
                 const errorDetails = await response_frequencia.json();
                 throw new DatabaseError(`Falha ao carregar frequências anteriores: ${errorDetails.message || 'Erro desconhecido'}`);
