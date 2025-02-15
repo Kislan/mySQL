@@ -91,41 +91,66 @@ async function associarAlunoAsDisciplinas(aluno_id, turmaId) {
       alert(`Erro ao associar aluno às disciplinas: ${error.message}`);
   }
 }
+async function verificarNumeroDeAlunosNaTurma(turmaId) {
+  try {
+    const response = await fetch('http://localhost:3000/api/aluno');
+    const alunos = await response.json();
+
+    // Filtra os alunos que estão matriculados na turma selecionada
+    const alunosNaTurma = alunos.filter(aluno => aluno.turma_id == turmaId);
+
+    return alunosNaTurma.length; // Retorna o número de alunos na turma
+  } catch (error) {
+    console.error("Erro ao verificar o número de alunos na turma:", error.message);
+    alert("Erro ao verificar o número de alunos na turma. Tente novamente mais tarde.");
+    return 0; // Em caso de erro, assume-se que não há alunos na turma
+  }
+}
 
 async function criarAlunoECadastrar(nome, data_nascimento, endereco, email, usuario, senha, turma_id) {
   try {
-      // Verifica se o nome de usuário já existe
-      const usuarioExistente = await verificarUsuarioExistente(usuario);
-      
-      if (usuarioExistente) {
-          alert("O nome de usuário escolhido já está em uso. Por favor, escolha outro nome de usuário.");
-          return;  // Não segue com o cadastro se o usuário já existir
-      }
-      
-      // Se o nome de usuário não existe, continua o processo de criação do aluno
-      const response = await fetch('http://localhost:3000/api/aluno', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ nome, data_nascimento, endereco, email, usuario, senha, turma_id })
-      });
+    // Verifica o número de alunos matriculados na turma
+    const numeroDeAlunos = await verificarNumeroDeAlunosNaTurma(turma_id);
 
-      if (!response.ok) {
-          const errorDetails = await response.json();
-          throw new Error(`Erro ao cadastrar aluno: ${errorDetails.message || 'Erro desconhecido'}`);
-      }
+    // Se já houver 3 alunos, não permite a matrícula
+    if (numeroDeAlunos >= 30) {
+      alert("Não é possível matricular, pois já existem 30 alunos matriculados nesta turma.");
+      return; // Interrompe o processo de matrícula
+    }
 
-      const result = await response.json();
-      await associarAlunoAsDisciplinas(result.id, turma_id);
-      alert(`Cadastro realizado com sucesso! Estudante ${nome} foi matriculado(a) na turma.`);
-      console.log('Aluno cadastrado com ID:', result.id);
+    // Verifica se o nome de usuário já existe
+    const usuarioExistente = await verificarUsuarioExistente(usuario);
 
-      // Redireciona após o cadastro ser realizado com sucesso
-      window.location.href = 'index.html';  // Redireciona para a página de índice após o cadastro com sucesso.
+    if (usuarioExistente) {
+      alert("O nome de usuário escolhido já está em uso. Por favor, escolha outro nome de usuário.");
+      return;  // Não segue com o cadastro se o usuário já existir
+    }
+
+    // Se o nome de usuário não existe, continua o processo de criação do aluno
+    const response = await fetch('http://localhost:3000/api/aluno', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nome, data_nascimento, endereco, email, usuario, senha, turma_id })
+    });
+
+    if (!response.ok) {
+      const errorDetails = await response.json();
+      throw new Error(`Erro ao cadastrar aluno: ${errorDetails.message || 'Erro desconhecido'}`);
+    }
+
+    const result = await response.json();
+    await associarAlunoAsDisciplinas(result.id, turma_id);
+    alert(`Cadastro realizado com sucesso! Estudante ${nome} foi matriculado(a) na turma.`);
+    console.log('Aluno cadastrado com ID:', result.id);
+
+    // Redireciona após o cadastro ser realizado com sucesso
+    window.location.href = 'index.html';  // Redireciona para a página de índice após o cadastro com sucesso.
   } catch (error) {
-      console.error("Erro ao criar aluno:", error.message);
-      alert(`Erro ao realizar cadastro: ${error.message}`);
+    console.error("Erro ao criar aluno:", error.message);
+    alert(`Erro ao realizar cadastro: ${error.message}`);
   }
 }
+
 
 // Evento de submit do formulário
 document.getElementById("formCadastro").addEventListener("submit", function(event) {
