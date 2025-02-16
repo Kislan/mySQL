@@ -8,10 +8,6 @@ let disciplina_carregada;
 let alunos_carregados = [];
 let dataAtual = new Date();
 
-// Formatar a data no formato desejado (YYYY-MM-DD)
-let dataFormatada = dataAtual.toISOString(); // Formato ISO 8601, ex: '2025-02-13T03:00:00.000Z'
-
-
 document.addEventListener('DOMContentLoaded', function () {
     async function loadData() {
         try {

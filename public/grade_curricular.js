@@ -1,98 +1,96 @@
 let dados_aluno;
 let disciplinas_carregadas = [];
-let professores_carregados=[];
+let professores_carregados = [];
 
 async function carregarDadosDisciplinas(aluno_id) {
-    const response = await fetch('http://localhost:3000/api/aluno_disciplina');
-    const aluno_disciplina = await response.json();
-        
-    if (!aluno_disciplina || aluno_disciplina.length === 0) {
-        alert("O aluno(a) não possui disciplinas associadas a ele(a).");
-        return;
-    }
-
-    let disciplinas = [];
-    for (let t_d of aluno_disciplina) {
-        if (t_d.aluno_id == aluno_id) {
-            disciplinas.push(t_d.disciplina_id);
-            console.log(disciplinas);
+    try {
+        const response = await fetch('http://localhost:3000/api/aluno_disciplina');
+        if (!response.ok) {
+            throw new Error('Falha ao carregar dados das disciplinas do aluno.');
         }
-    }
-
-    const response_disciplina = await fetch('http://localhost:3000/api/disciplina');
-    const disciplinaS_aluno = await response_disciplina.json();
+        const aluno_disciplina = await response.json();
         
-    if (!disciplinaS_aluno || disciplinaS_aluno.length === 0) {
-        alert("O aluno(a) não possui disciplinas associadas a ele(a).");
-        return;
-    }
-
-    for (let numero of disciplinas) {
-        // Procurar um objeto em `dados` que tenha o mesmo número da disciplina
-        let disciplinaEncontrada = disciplinaS_aluno.find(dado => dado.id === numero);
-
-        // Se encontrar a disciplina, adicionar ao array de comuns
-        if (disciplinaEncontrada) {
-            disciplinas_carregadas.push(disciplinaEncontrada);
+        if (!aluno_disciplina || aluno_disciplina.length === 0) {
+            alert("O aluno(a) não possui disciplinas associadas a ele(a).");
+            return;
         }
-    }
-   
-    console.log('Disciplinas carregadas:', disciplinas_carregadas);  // Para depuração
 
-    const response_professores = await fetch('http://localhost:3000/api/professor');
-    const professores = await response_professores.json();
-
-    for (let prof of professores) {
-        // Para cada professor, procurar a disciplina associada a ele
-        for (let disciplina of disciplinas_carregadas) {
-            if (disciplina.professor_id === prof.id) {
-                // Armazenar o nome da disciplina e os dados do professor como um objeto na lista
-                professores_carregados.push({
-                    [disciplina.nome]: prof  // A chave é o nome da disciplina e o valor é o professor
-                });
-                break;  // Se já encontrou o professor responsável, pode sair do loop
+        let disciplinas = [];
+        for (let t_d of aluno_disciplina) {
+            if (t_d.aluno_id == aluno_id) {
+                disciplinas.push(t_d.disciplina_id);
             }
         }
-    }
 
-    // Chama a função para exibir a grade curricular
-    grade_curricular();
+        const response_disciplina = await fetch('http://localhost:3000/api/disciplina');
+        if (!response_disciplina.ok) {
+            throw new Error('Falha ao carregar dados das disciplinas.');
+        }
+        const disciplinaS_aluno = await response_disciplina.json();
+        
+        if (!disciplinaS_aluno || disciplinaS_aluno.length === 0) {
+            alert("O aluno(a) não possui disciplinas associadas a ele(a).");
+            return;
+        }
+
+        for (let numero of disciplinas) {
+            let disciplinaEncontrada = disciplinaS_aluno.find(dado => dado.id === numero);
+            if (disciplinaEncontrada) {
+                disciplinas_carregadas.push(disciplinaEncontrada);
+            }
+        }
+
+        const response_professores = await fetch('http://localhost:3000/api/professor');
+        if (!response_professores.ok) {
+            throw new Error('Falha ao carregar dados dos professores.');
+        }
+        const professores = await response_professores.json();
+
+        for (let prof of professores) {
+            for (let disciplina of disciplinas_carregadas) {
+                if (disciplina.professor_id === prof.id) {
+                    professores_carregados.push({
+                        [disciplina.nome]: prof
+                    });
+                    break;
+                }
+            }
+        }
+
+        grade_curricular(); // Chama a função para exibir a grade curricular
+    } catch (error) {
+        console.error("Erro ao carregar dados das disciplinas:", error);
+        alert("Ocorreu um erro ao carregar os dados das disciplinas. Por favor, tente novamente.");
+    }
 }
 
 document.addEventListener('DOMContentLoaded', async function() {
     try {
-        // Tenta pegar o nome do aluno logado do localStorage
         let aluno_nomeUsuario = JSON.parse(localStorage.getItem('alunoLogado'));
-        if (aluno_nomeUsuario) {
-            const response = await fetch('http://localhost:3000/api/aluno');
-            if (!response.ok) {
-                throw new Error('Falha ao carregar dados dos alunos.');
-            }
-            const alunos = await response.json();
-
-            // Encontrar o aluno correspondente com base no nome de usuário
-            let aluno = alunos.find(al => al.usuario === aluno_nomeUsuario.usuario);
-
-            if (aluno) {
-                // Exibe o nome do aluno
-                document.getElementById('nomeAluno').textContent = aluno.nome;
-                dados_aluno = aluno;
-                console.log(aluno.id)
-
-                // Chama a função para carregar as disciplinas do aluno
-                await carregarDadosDisciplinas(aluno.id);  // Aqui está a chamada
-            } else {
-                throw new Error('Aluno não encontrado na lista de alunos.');
-            }
-        } else {
+        if (!aluno_nomeUsuario) {
             throw new Error('Aluno não encontrado no localStorage');
         }
+
+        const response = await fetch('http://localhost:3000/api/aluno');
+        if (!response.ok) {
+            throw new Error('Falha ao carregar dados dos alunos.');
+        }
+        const alunos = await response.json();
+
+        let aluno = alunos.find(al => al.usuario === aluno_nomeUsuario.usuario);
+        if (!aluno) {
+            throw new Error('Aluno não encontrado na lista de alunos.');
+        }
+
+        document.getElementById('nomeAluno').textContent = aluno.nome;
+        dados_aluno = aluno;
+
+        await carregarDadosDisciplinas(aluno.id);
     } catch (error) {
         console.error("Erro ao recuperar o aluno logado:", error);
         alert("Ocorreu um erro ao carregar os dados do aluno. Por favor, tente novamente.");
     }
 });
-
 
 function toggleMenu() {
     try {
@@ -112,7 +110,6 @@ function toggleMenu() {
 
 function inicio() {
     try {
-        // Altera o URL da janela atual para a página de início
         window.location.href = 'pagina-aluno.html';
     } catch (error) {
         console.error("Erro ao redirecionar para a página inicial:", error);
@@ -122,7 +119,6 @@ function inicio() {
 
 function boletim() {
     try {
-        // Altera o URL da janela atual para a página do boletim
         window.location.href = 'boletim.html';
     } catch (error) {
         console.error("Erro ao redirecionar para a página do boletim:", error);
@@ -148,41 +144,30 @@ function grade_curricular() {
                 </thead>
                 <tbody>`;
 
-        // Percorre as disciplinas carregadas e preenche as linhas da tabela
         disciplinas_carregadas.forEach(disciplina => {
-            // Encontra o professor responsável pela disciplina
             let professorResponsavel = professores_carregados.find(professor => professor[disciplina.nome]);
 
-            // Se encontrou o professor, preenche os dados
             if (professorResponsavel) {
-                let professor = professorResponsavel[disciplina.nome]; // Pega os dados do professor
+                let professor = professorResponsavel[disciplina.nome];
                 boletimHtml += `
                 <tr>
                     <td>${disciplina.nome}</td>
                     <td>${disciplina.quantidade_aulas}</td>
                     <td>${professor.nome}</td>
                     <td>${professor.email}</td>
-                </tr>
-                `;
+                </tr>`;
             } else {
-                // Se não encontrou o professor, deixar as células vazias
                 boletimHtml += `
                 <tr>
                     <td>${disciplina.nome}</td>
                     <td>${disciplina.quantidade_aulas}</td>
                     <td>Sem professor</td>
                     <td>Sem e-mail</td>
-                </tr>
-                `;
+                </tr>`;
             }
         });
 
-        boletimHtml += `
-        </tbody>
-        </table>
-        `;
-
-        // Adiciona o conteúdo da tabela à div
+        boletimHtml += `</tbody></table>`;
         boletimDiv.innerHTML = boletimHtml;
     } catch (error) {
         console.error("Erro ao carregar a grade curricular:", error);
