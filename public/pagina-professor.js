@@ -454,7 +454,10 @@ async function salvarNotas(turma) {
             throw new Error("Nenhum aluno encontrado para essa turma.");
         }
 
-        // Loop pelos alunos
+        // Cria um array para armazenar as promessas de envio de notas
+        const promessasEnvioNotas = [];
+
+        // Loop pelos alunos para validar as notas
         for (const aluno of alunos_da_turma_) {
             try {
                 if (aluno.turma_id == turma) {
@@ -508,8 +511,8 @@ async function salvarNotas(turma) {
                         continue;  // Pula para o próximo aluno
                     }
 
-                    // Envia a nota para o backend
-                    await post_Notas(nota, tipoAvaliacao.toString(), parseInt(bimestre), parseInt(aluno.id), parseInt(disciplina_carregada.id));
+                    // Se tudo estiver certo, cria a promessa para o envio da nota
+                    promessasEnvioNotas.push(post_Notas(nota, tipoAvaliacao.toString(), parseInt(bimestre), parseInt(aluno.id), parseInt(disciplina_carregada.id)));
                 }
             } catch (alunoError) {
                 console.error(`Erro ao processar o aluno ${aluno.nome}:`, alunoError);
@@ -518,9 +521,13 @@ async function salvarNotas(turma) {
             }
         }
 
+        // Se houver erros, não continua com o salvamento
         if (todosOsErros) {
-            return;  // Se houver erro em algum aluno, não continua com o salvamento
+            return;
         }
+
+        // Quando todas as validações passarem, faz o envio das notas
+        await Promise.all(promessasEnvioNotas);
 
         alert("Notas registradas com sucesso!");
 
@@ -529,6 +536,7 @@ async function salvarNotas(turma) {
         alert('Ocorreu um erro inesperado. Por favor, tente novamente.');
     }
 }
+
 
 // Função para gerar o relatório de desempenho
 async function gerarRelatorio(turma) {
