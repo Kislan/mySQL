@@ -499,7 +499,7 @@ async function salvarNotas(turma) {
                     let somaNotasBimestre = 0;
                     notas.forEach(notaExistente => {
                         if (notaExistente.bimestre == bimestre && notaExistente.aluno_id == aluno.id && notaExistente.disciplina_id == disciplina_carregada.id) {
-                            somaNotasBimestre += notaExistente.valorNota;
+                            somaNotasBimestre +=parseFloat( notaExistente.valorNota);
                         }
                     });
 
