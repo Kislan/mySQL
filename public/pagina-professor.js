@@ -187,7 +187,7 @@ async function registrarFrequencia(turma) {
 
         // Adiciona o evento de clique ao botão
         document.getElementById('btnSalvarFrequencia').addEventListener('click', function() {
-            salvarFrequencia(turma);
+            salvarFrequenciasComSeguranca(turma);
         });
 
     } catch (error) {
@@ -196,17 +196,19 @@ async function registrarFrequencia(turma) {
     }
 }
 
+// Função para validar as frequências antes de tentar salvar
 async function salvarFrequencia(turma) {
-    console.log('Registrando as frequências para a turma: ' + turma);
     const alunos_da_turma_ = [];
-    let todosOsErros = false; // Variável de controle de erros
+    let errosEncontrados = false; // Flag para controle de erros
+    const quantidadeAulas = parseInt(document.getElementById('qtaulas').value);
 
     try {
-        const quantidadeAulas = parseInt(document.getElementById('qtaulas').value);
-
         // Verificação da quantidade de aulas
         if (isNaN(quantidadeAulas) || quantidadeAulas <= 0) {
-            throw new ValidationError("A quantidade de aulas deve ser um número válido maior que 0.");
+            alert("Erro: A quantidade de aulas deve ser um número válido maior que 0.");
+            console.error("Erro: A quantidade de aulas não é válida.");
+            errosEncontrados = true;
+            return false; // Interrompe a execução e impede o registro das frequências
         }
 
         // Buscando alunos do backend
@@ -229,7 +231,7 @@ async function salvarFrequencia(turma) {
             throw new DatabaseError("Nenhum aluno encontrado para essa turma.");
         }
 
-        // Loop pelos alunos
+        // Loop pelos alunos para validar as frequências
         for (const aluno of alunos_da_turma_) {
             const alunoNomeFormatado = aluno.usuario.replace(/\s+/g, '_');
             const faltasInput = document.querySelector(`input[name="faltas_${alunoNomeFormatado}"]`);
@@ -237,8 +239,8 @@ async function salvarFrequencia(turma) {
             if (!faltasInput) {
                 console.error(`Erro: Não encontrado o campo de faltas para o aluno ${aluno.nome}`);
                 alert(`Erro: Não encontrado o campo de faltas para o aluno ${aluno.nome}`);
-                todosOsErros = true;
-                continue; // Pula para o próximo aluno
+                errosEncontrados = true;
+                break; // Interrompe se o erro ocorrer
             }
 
             const faltas_ = parseInt(faltasInput.value);
@@ -247,8 +249,8 @@ async function salvarFrequencia(turma) {
             if (faltasInput.value === '' || isNaN(faltas_) || faltas_ < 0 || faltas_ > quantidadeAulas) {
                 console.error(`Erro: A quantidade de faltas para o aluno ${aluno.nome} não é válida.`);
                 alert(`Erro: A quantidade de faltas para o aluno ${aluno.nome} não pode ser maior que o número de aulas ou ser negativa.`);
-                todosOsErros = true;
-                continue; // Pula para o próximo aluno
+                errosEncontrados = true;
+                break; // Interrompe se o erro ocorrer
             }
 
             let aulasDadasExistentes = 0;
@@ -263,70 +265,104 @@ async function salvarFrequencia(turma) {
 
             // Verifica as frequências anteriores para o aluno
             frequencias_anteriores.forEach(p => {
-                if (p.disciplina_id === disciplina_carregada.id && p.aluno_id === aluno.id) {
-                    aulasDadasExistentes += p.aulas_dadas || 0;
+                if (p.disciplina_id == disciplina_carregada.id && p.aluno_id == aluno.id) {
+                    aulasDadasExistentes += parseFloat(p.aulas_dadas) || 0;
                 }
             });
 
+            if (quantidadeAulas > parseInt(disciplina_carregada.quantidade_aulas)) {
+                console.error(`Erro: Não é possível adicionar mais aulas do que o total de aulas da disciplina. Carga horária: ${disciplina_carregada.quantidade_aulas}. Aulas ministradas + novas aulas: ${aulasDadasExistentes + quantidadeAulas}`);
+                alert(`Erro:As aulas não pode ultrapassar o total de aulas da disciplina.`);
+                errosEncontrados = true;
+                break; // Interrompe se o erro ocorrer
+            }
             // Verificação de condição: Nova quantidade de aulas dadas não pode ser maior que o total de aulas da disciplina
-            if (aulasDadasExistentes + quantidadeAulas > disciplina_carregada.quantidade_aulas) {
+            if (aulasDadasExistentes + quantidadeAulas >parseInt( disciplina_carregada.quantidade_aulas)) {
                 console.error(`Erro: Não é possível adicionar mais aulas do que o total de aulas da disciplina. Carga horária: ${disciplina_carregada.quantidade_aulas}. Aulas ministradas + novas aulas: ${aulasDadasExistentes + quantidadeAulas}`);
                 alert(`Erro: A soma das aulas não pode ultrapassar o total de aulas da disciplina.`);
-                todosOsErros = true;
-                continue; // Pula para o próximo aluno
+                errosEncontrados = true;
+                break; // Interrompe se o erro ocorrer
             }
+        }
 
-            // Registrar a frequência
+        // Se houver qualquer erro, retorna falso para indicar que não podemos salvar
+        return !errosEncontrados;
+
+    } catch (error) {
+        // Tratamento de erros
+        console.error("Erro ao validar frequências:", error);
+        alert("Ocorreu um erro ao validar as frequências.");
+        return false; // Retorna falso se algum erro ocorrer
+    }
+}
+
+// Função para registrar a frequência no backend, caso a validação tenha sido bem-sucedida
+async function post_frequencia(aluno_id, disciplina_id, aulas_dadas, faltas) {
+    try {
+        // Faz a requisição POST para registrar a frequência
+        const response = await fetch('http://localhost:3000/api/registros_aulas', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ aluno_id, disciplina_id, aulas_dadas, faltas })
+        });
+
+        // Verificação de resposta da API
+        if (!response.ok) {
+            const errorDetails = await response.json();
+            console.error('Erro detalhado da API:', errorDetails);
+            throw new Error(`Erro ao registrar frequência: ${errorDetails.message || 'Erro desconhecido'}`);
+        }
+
+        // Sucesso
+        console.log('Frequência registrada com sucesso!');
+    } catch (error) {
+        // Tratamento de erros
+        alert("Ocorreu um erro inesperado ao registrar a frequência.");
+        console.error("Erro inesperado:", error);
+    }
+}
+
+// Função principal para salvar frequências com validação antes
+async function salvarFrequenciasComSeguranca(turma) {
+    const quantidadeAulas = parseInt(document.getElementById('qtaulas').value);
+
+    // Valida os dados primeiro
+    const validacaoOk = await salvarFrequencia(turma);
+
+    if (validacaoOk) {
+        // Se a validação passou, chama a função para registrar as frequências
+        const alunos_da_turma_ = [];
+        const response_alunos = await fetch('http://localhost:3000/api/aluno');
+        const alunos = await response_alunos.json();
+        alunos.forEach(alu => {
+            if (alu.turma_id == turma) {
+                alunos_da_turma_.push(alu);
+            }
+        });
+
+        console.log("Alunos encontrados para registro:", alunos_da_turma_);
+
+        for (const aluno of alunos_da_turma_) {
+            const alunoNomeFormatado = aluno.usuario.replace(/\s+/g, '_');
+            const faltasInput = document.querySelector(`input[name="faltas_${alunoNomeFormatado}"]`);
+            const faltas_ = parseInt(faltasInput.value);
+
             const aluno_id = parseInt(aluno.id);
             const disciplina_id = parseInt(disciplina_carregada.id);
             const aulas_dadas = quantidadeAulas;
             const faltas = faltas_.toString();
 
-            // Validação dos dados antes de registrar a frequência
-            if (!aluno_id || !disciplina_id || typeof aulas_dadas !== 'number' || typeof faltas !== 'string') {
-                console.error("Todos os campos devem ser preenchidos corretamente.");
-                alert("Todos os campos devem ser preenchidos corretamente.");
-                todosOsErros = true;
-                continue; // Pula para o próximo aluno
-            }
-
-            // Faz a requisição POST para registrar a frequência
-            const response = await fetch('http://localhost:3000/api/registros_aulas', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ aluno_id, disciplina_id, aulas_dadas, faltas })
-            });
-
-            // Verificação de resposta da API
-            if (!response.ok) {
-                const errorDetails = await response.json();
-                console.error('Erro detalhado da API:', errorDetails);
-                throw new Error(`Erro ao registrar frequência: ${errorDetails.message || 'Erro desconhecido'}`);
-            }
-
-            // Sucesso
-            console.log('Frequência registrada com sucesso!');
+            // Chama a função para registrar a frequência
+            await post_frequencia(aluno_id, disciplina_id, aulas_dadas, faltas);
         }
 
-        if (!todosOsErros) {
-            alert("Frequências registradas com sucesso!");
-        }
+        alert("Frequências registradas com sucesso!");
 
-    } catch (error) {
-        // Tratamento de erros
-        if (error instanceof ValidationError) {
-            alert("Erro de validação: " + error.message);
-            console.error("Erro de validação:", error.stack);
-        } else if (error instanceof DatabaseError) {
-            alert("Erro no banco de dados: " + error.message);
-            console.error("Erro no banco de dados:", error.stack);
-        } else {
-            alert("Ocorreu um erro inesperado.");
-            console.error("Erro inesperado:", error.stack);
-        }
+    } else {
+        // Se houve erro na validação, não salva as frequências
+        alert("Houve erro(s) na validação das frequências. Nenhuma frequência foi salva.");
     }
 }
-
 
 
 // Função para registrar as notas
