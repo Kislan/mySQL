@@ -128,7 +128,9 @@ async function carregarNotas() {
             throw new DataFetchError('Falha ao carregar notas.');
         }
         const notas = await response_notas.json();
-        notas_carregadas = notas.filter(nota => nota.aluno_id === aluno_carregado.id);
+        for (let nota of notas){
+            notas_carregadas.push(nota)
+        }
     } catch (error) {
         console.error("Erro ao carregar notas:", error);
         alert("Erro ao carregar as notas.");
@@ -165,10 +167,10 @@ function exibirBoletim() {
             let situacao = 'Cursando';
 
             for (let nota of notas_carregadas) {
-                if (nota.disciplina_id === disciplina.id && nota.bimestre === 1) soma_n1.push(nota);
-                if (nota.disciplina_id === disciplina.id && nota.bimestre === 2) soma_n2.push(nota);
-                if (nota.disciplina_id === disciplina.id && nota.bimestre === 3) soma_n3.push(nota);
-                if (nota.disciplina_id === disciplina.id && nota.bimestre === 4) soma_n4.push(nota);
+                if (nota.disciplina_id == disciplina.id && nota.bimestre == 1 && nota.aluno_id==aluno_carregado.id) soma_n1.push(nota);
+                if (nota.disciplina_id == disciplina.id && nota.bimestre == 2 && nota.aluno_id==aluno_carregado.id) soma_n2.push(nota);
+                if (nota.disciplina_id == disciplina.id && nota.bimestre == 3 && nota.aluno_id==aluno_carregado.id) soma_n3.push(nota);
+                if (nota.disciplina_id == disciplina.id && nota.bimestre == 4 && nota.aluno_id==aluno_carregado.id) soma_n4.push(nota);
             }
 
             nota1 = soma_n1.length === 0 ? '-' : soma_n1.reduce((acc, obj) => acc + parseFloat(obj.valorNota), 0);

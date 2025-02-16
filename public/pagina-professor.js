@@ -431,7 +431,7 @@ async function post_Notas(valorNota, tipo_avaliacao, bimestre, aluno_id, discipl
 async function salvarNotas(turma) {
     console.log('Salvando as notas para a turma: ' + turma);
     const alunos_da_turma_ = [];
-    let todosOsErros = false; // Variável de controle de erros
+    let errosEncontrados = false; // Flag para controle de erros
 
     try {
         // Obter os alunos
@@ -454,11 +454,12 @@ async function salvarNotas(turma) {
             throw new Error("Nenhum aluno encontrado para essa turma.");
         }
 
-        // Cria um array para armazenar as promessas de envio de notas
-        const promessasEnvioNotas = [];
-
-        // Loop pelos alunos para validar as notas
+        // Verifica se há algum erro nos dados dos alunos antes de salvar qualquer nota
         for (const aluno of alunos_da_turma_) {
+            if (errosEncontrados) {
+                break; // Interrompe a verificação se já encontrou erro
+            }
+
             try {
                 if (aluno.turma_id == turma) {
                     const alunoNomeFormatado = aluno.usuario.replace(/\s+/g, '_');
@@ -471,8 +472,8 @@ async function salvarNotas(turma) {
                     if (!tipoAvaliacaoElement || !notaElement || !bimestreElement || !notaElement.value) {
                         console.error(`Erro: Campos de avaliação ou nota não preenchidos para o aluno ${aluno.nome}`);
                         alert(`Erro: Todos os campos devem ser preenchidos para o aluno ${aluno.nome}`);
-                        todosOsErros = true;
-                        continue;  // Pula para o próximo aluno
+                        errosEncontrados = true; // Marca erro
+                        break;  // Interrompe a verificação se houver erro
                     }
 
                     const tipoAvaliacao = tipoAvaliacaoElement.value;
@@ -483,8 +484,8 @@ async function salvarNotas(turma) {
                     if (nota < 0 || nota > 100) {
                         console.error(`Erro: A nota para o aluno ${aluno.nome} deve estar entre 0 e 100.`);
                         alert(`Erro: A nota para o aluno ${aluno.nome} deve estar entre 0 e 100.`);
-                        todosOsErros = true;
-                        continue;
+                        errosEncontrados = true; // Marca erro
+                        break;  // Interrompe a verificação se houver erro
                     }
 
                     // Verifica as notas existentes para o bimestre e aluno
@@ -499,7 +500,7 @@ async function salvarNotas(turma) {
                     let somaNotasBimestre = 0;
                     notas.forEach(notaExistente => {
                         if (notaExistente.bimestre == bimestre && notaExistente.aluno_id == aluno.id && notaExistente.disciplina_id == disciplina_carregada.id) {
-                            somaNotasBimestre +=parseFloat( notaExistente.valorNota);
+                            somaNotasBimestre += parseFloat(notaExistente.valorNota);
                         }
                     });
 
@@ -507,27 +508,38 @@ async function salvarNotas(turma) {
                     if (somaNotasBimestre + nota > 100) {
                         console.error(`Erro: A soma das notas no bimestre ${bimestre} para o aluno ${aluno.nome} não pode ultrapassar 100.`);
                         alert(`Erro: A soma das notas no bimestre ${bimestre} para o aluno ${aluno.nome} não pode ultrapassar 100.`);
-                        todosOsErros = true;
-                        continue;  // Pula para o próximo aluno
+                        errosEncontrados = true; // Marca erro
+                        break;  // Interrompe a verificação se houver erro
                     }
-
-                    // Se tudo estiver certo, cria a promessa para o envio da nota
-                    promessasEnvioNotas.push(post_Notas(nota, tipoAvaliacao.toString(), parseInt(bimestre), parseInt(aluno.id), parseInt(disciplina_carregada.id)));
                 }
             } catch (alunoError) {
                 console.error(`Erro ao processar o aluno ${aluno.nome}:`, alunoError);
                 alert(`Ocorreu um erro ao processar o aluno ${aluno.nome}.`);
-                todosOsErros = true;
+                errosEncontrados = true; // Marca erro
+                break;  // Interrompe a verificação se houver erro
             }
         }
 
         // Se houver erros, não continua com o salvamento
-        if (todosOsErros) {
-            return;
+        if (errosEncontrados) {
+            console.log("Erros encontrados, o processo de salvamento foi interrompido.");
+            alert('Houve erros na validação de alguns alunos. Nenhuma nota foi salva.');
+            return; // Interrompe o processo de salvamento
         }
 
-        // Quando todas as validações passarem, faz o envio das notas
-        await Promise.all(promessasEnvioNotas);
+        // Envia as notas para todos os alunos sem erros
+        for (const aluno of alunos_da_turma_) {
+            const alunoNomeFormatado = aluno.usuario.replace(/\s+/g, '_');
+            const tipoAvaliacaoElement = document.querySelector(`select[name="tipo_avaliacao_${alunoNomeFormatado}"]`);
+            const notaElement = document.querySelector(`input[name="nota_${alunoNomeFormatado}"]`);
+            const bimestreElement = document.querySelector(`select[name="bimestre_${alunoNomeFormatado}"]`);
+            
+            const tipoAvaliacao = tipoAvaliacaoElement.value;
+            const nota = parseInt(notaElement.value);
+            const bimestre = bimestreElement.value;
+
+            await post_Notas(nota, tipoAvaliacao, bimestre, aluno.id, disciplina_carregada.id);
+        }
 
         alert("Notas registradas com sucesso!");
 
@@ -536,7 +548,6 @@ async function salvarNotas(turma) {
         alert('Ocorreu um erro inesperado. Por favor, tente novamente.');
     }
 }
-
 
 // Função para gerar o relatório de desempenho
 async function gerarRelatorio(turma) {
