@@ -46,4 +46,14 @@ describe("Professor", () => {
     test("Não deve registrar aulas inválidas (mais do que a carga horária)", () => {
         expect(() => professor.registrarAulasEFaltas(aluno, disciplina, 70, 5)).toThrow("Valores inválidos! As aulas dadas não podem ser negativas ou superiores à carga horária da disciplina.");
     });
+
+    test("Não deve registrar aulas negativas", () => {
+        expect(() => professor.registrarAulasEFaltas(aluno, disciplina, -5, 2)).toThrow("Valores inválidos! As aulas dadas não podem ser negativas ou superiores à carga horária da disciplina.");
+    });
+
+    test("Deve gerar relatório do aluno corretamente", () => {
+        console.log = jest.fn();
+        professor.gerarRelatorio(aluno, disciplina);
+        expect(console.log).toHaveBeenCalled();
+    });
 });

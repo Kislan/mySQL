@@ -210,9 +210,13 @@
     "test": "jest"
   },
   "jest": {
-    "preset": "ts-jest",
-    "testEnvironment": "node"
-  },
+  "preset": "ts-jest",
+  "testEnvironment": "node",
+  "moduleFileExtensions": ["ts", "tsx", "js", "jsx", "json", "node"],
+  "transform": {
+    "^.+\\.tsx?$": "ts-jest"
+  }
+},
   "author": "",
   "license": "ISC"
 }

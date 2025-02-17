@@ -66,9 +66,7 @@ export class Aluno {
     
         // Verifica se a soma das notas não ultrapassa 100
         if (somaNotas + nota.valorNota > 100) {
-            console.log(`Erro: A soma das notas da disciplina ${nota.disciplina.nome} não pode ultrapassar 100.`);
-            alert(`Erro: A soma das notas da disciplina não pode ultrapassar 100.`);
-            return;
+            throw new Error(`A soma das notas da disciplina ${nota.disciplina.nome} não pode ultrapassar 100.`);
         } else {
             // Adiciona a nova nota
             this._notas.push(nota);
